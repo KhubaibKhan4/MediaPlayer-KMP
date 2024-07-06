@@ -72,4 +72,3 @@ private fun JFXPanel.buildWebView(url: String, onLoadingChange: (Boolean) -> Uni
         setScene(scene)
     }
 }
-

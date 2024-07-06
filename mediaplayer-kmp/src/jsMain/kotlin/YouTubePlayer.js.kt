@@ -11,15 +11,16 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import kotlinx.browser.document
 
 @Composable
 actual fun VideoPlayer(
@@ -51,7 +52,7 @@ actual fun VideoPlayer(
     } else {
         Box(modifier = modifier.fillMaxWidth()) {
             coil3.compose.AsyncImage(
-                modifier = modifier,
+                modifier = modifier.fillMaxWidth(),
                 model = thumbnail,
                 contentDescription = "Thumbnail Image",
                 contentScale = ContentScale.Crop,

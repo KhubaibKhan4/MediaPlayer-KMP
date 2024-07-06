@@ -45,7 +45,7 @@ actual fun VideoPlayer(
     } else {
         Box(modifier = modifier.fillMaxWidth()) {
             coil3.compose.AsyncImage(
-                modifier = modifier,
+                modifier = modifier.fillMaxWidth(),
                 model = thumbnail,
                 contentDescription = "Thumbnail Image",
                 contentScale = ContentScale.Crop,

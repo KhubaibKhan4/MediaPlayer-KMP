@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -22,13 +23,12 @@ kotlin {
         }
         publishLibraryVariants("release", "debug")
     }
-
-    js {
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
         browser()
         binaries.executable()
     }
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
+    js {
         browser()
         binaries.executable()
     }
@@ -70,6 +70,10 @@ kotlin {
                 implementation(libs.androidx.appcompat)
                 implementation(libs.androidx.activityCompose)
                 implementation(libs.compose.uitooling)
+                implementation(compose.ui)
+                implementation("androidx.media3:media3-exoplayer:1.3.1")
+                implementation("androidx.media3:media3-exoplayer-dash:1.3.1")
+                implementation("androidx.media3:media3-ui:1.3.1")
             }
         }
         val jvmMain by getting {
@@ -111,7 +115,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "0.0.2"
+        version = "0.0.5"
     )
 
     // Configure POM metadata for the published artifact
