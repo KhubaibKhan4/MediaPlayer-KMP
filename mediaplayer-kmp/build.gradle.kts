@@ -22,8 +22,13 @@ kotlin {
         }
         publishLibraryVariants("release", "debug")
     }
-    @OptIn(ExperimentalWasmDsl::class)
+
     js {
+        browser()
+        binaries.executable()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmJs {
         browser()
         binaries.executable()
     }
@@ -45,6 +50,11 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.foundation)
                 implementation(compose.ui)
+                implementation(libs.ktor.client.core)
+                implementation(libs.coil.compose.core)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.mp)
+                implementation(libs.coil.network.ktor)
             }
         }
         val commonTest by getting {
@@ -55,9 +65,6 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation(libs.startup.runtime)
-                implementation(libs.androidx.media3.exoplayer)
-                implementation(libs.androidx.media3.exoplayer.dash)
-                implementation(libs.androidx.media3.ui)
                 implementation(libs.core)
                 implementation(libs.custom.ui)
                 implementation(libs.androidx.appcompat)
@@ -104,7 +111,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "0.0.1"
+        version = "0.0.2"
     )
 
     // Configure POM metadata for the published artifact
@@ -144,8 +151,3 @@ mavenPublishing {
 }
 
 task("testClasses") {}
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "17" // or "11" or "17"
-    }
-}

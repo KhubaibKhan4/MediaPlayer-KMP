@@ -1,4 +1,6 @@
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerLayer
 import platform.AVFoundation.play
@@ -23,6 +25,7 @@ import platform.UIKit.UIDevice
 import platform.UIKit.UIView
 import platform.darwin.*
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
 import kotlinx.cinterop.CValue
@@ -30,33 +33,89 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-actual fun VideoPlayer(modifier: Modifier, url: String?, thumbnail: String?) {
+actual fun VideoPlayer(
+    modifier: Modifier,
+    url: String?,
+    thumbnail: String?,
+    onPlayClick: () -> Unit
+) {
+    var isPlaying by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
 
-    val player = remember { NSURL.URLWithString(url.toString())?.let { AVPlayer(uRL = it) } }
-    val playerLayer = remember { AVPlayerLayer() }
-    val avPlayerViewController = remember { AVPlayerViewController() }
-    avPlayerViewController.player = player
-    avPlayerViewController.showsPlaybackControls = true
+    if (isPlaying) {
+        val player = remember {
+            when {
+                url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
+                    NSURL.URLWithString(url.toString())?.let { AVPlayer(uRL = it) }
+                }
+                isVideoFile(url) -> {
+                    NSURL.URLWithString(url.toString())?.let { AVPlayer(uRL = it) }
+                }
+                else -> null
+            }
+        }
+        val playerLayer = remember { AVPlayerLayer() }
+        val avPlayerViewController = remember { AVPlayerViewController() }
+        avPlayerViewController.player = player
+        avPlayerViewController.showsPlaybackControls = true
 
-    playerLayer.player = player
-    UIKitView(
-        factory = {
-            val playerContainer = UIView()
-            playerContainer.addSubview(avPlayerViewController.view)
-            playerContainer
-        },
-        onResize = { view: UIView, rect: CValue<CGRect> ->
-            CATransaction.begin()
-            CATransaction.setValue(true, kCATransactionDisableActions)
-            view.layer.setFrame(rect)
-            playerLayer.setFrame(rect)
-            avPlayerViewController.view.layer.frame = rect
-            CATransaction.commit()
-        },
-        update = { view ->
-            player!!.play()
-            avPlayerViewController.player!!.play()
-        },
-        modifier = modifier
-    )
+        playerLayer.player = player
+        UIKitView(
+            factory = {
+                val playerContainer = UIView()
+                playerContainer.addSubview(avPlayerViewController.view)
+                playerContainer
+            },
+            onResize = { view: UIView, rect: CValue<CGRect> ->
+                CATransaction.begin()
+                CATransaction.setValue(true, kCATransactionDisableActions)
+                view.layer.setFrame(rect)
+                playerLayer.setFrame(rect)
+                avPlayerViewController.view.layer.frame = rect
+                CATransaction.commit()
+            },
+            update = { view ->
+                player?.play()
+                avPlayerViewController.player?.play()
+            },
+            modifier = modifier
+        )
+    } else {
+        Box(modifier = modifier.fillMaxWidth()) {
+            val uiImage = remember(thumbnail) {
+                thumbnail?.let {
+                    URL(string: it)?.let {
+                        NSData(contentsOf: it)?.let {
+                            UIImage(data: it)
+                        }
+                    }
+                }
+            }
+            if (uiImage != null) {
+                Image(uiImage = uiImage)
+                    .resizable()
+                    .modifier(modifier)
+                    .onAppear {
+                        isLoading = false
+                    }
+            } else {
+                isLoading = false
+            }
+            if (isLoading) {
+                ProgressView().modifier(Modifier.align(Alignment.Center))
+            } else {
+                Image(systemName: "play.circle.fill")
+                .resizable()
+                    .frame(width: 45.dp, height: 45.dp)
+                .modifier(Modifier.align(Alignment.Center).clickable {
+                    onPlayClick()
+                    isPlaying = !isPlaying
+                })
+            }
+        }
+    }
+}
+
+fun isVideoFile(url: String?): Boolean {
+    return url?.matches(Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg)\$", RegexOption.IGNORE_CASE)) == true
 }
