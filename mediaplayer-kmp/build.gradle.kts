@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.compose)
+    alias(libs.plugins.compose.compiler)
     id("com.vanniktech.maven.publish") version "0.29.0"
     id("com.google.osdetector") version "1.7.3"
 }
@@ -21,10 +23,6 @@ kotlin {
         publishLibraryVariants("release", "debug")
     }
     @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
     js {
         browser()
         binaries.executable()
@@ -43,7 +41,10 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                //put your multiplatform dependencies here
+                implementation(compose.runtime)
+                implementation(compose.material3)
+                implementation(compose.foundation)
+                implementation(compose.ui)
             }
         }
         val commonTest by getting {
@@ -57,11 +58,17 @@ kotlin {
                 implementation(libs.androidx.media3.exoplayer)
                 implementation(libs.androidx.media3.exoplayer.dash)
                 implementation(libs.androidx.media3.ui)
+                implementation(libs.core)
                 implementation(libs.custom.ui)
+                implementation(libs.androidx.appcompat)
+                implementation(libs.androidx.activityCompose)
+                implementation(libs.compose.uitooling)
             }
         }
         val jvmMain by getting {
             dependencies {
+                implementation(compose.desktop.common)
+                implementation(compose.desktop.currentOs)
                 val fxSuffix = when (osdetector.classifier) {
                     "linux-x86_64" -> "linux"
                     "linux-aarch_64" -> "linux-aarch64"
@@ -80,10 +87,7 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
-            }
-        }
-        val wasmJsMain by getting {
-            dependencies {
+                implementation(compose.html.core)
             }
         }
     }
