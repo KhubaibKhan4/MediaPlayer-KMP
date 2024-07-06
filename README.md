@@ -1,58 +1,80 @@
-[![official project](http://jb.gg/badges/official.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+# Alert-KMP
 
-# Multiplatform library template
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.khubaibkhan4/alert-kmp.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.khubaibkhan4/alert-kmp)
+![GitHub License](https://img.shields.io/github/license/KhubaibKhan4/Alert-KMP)
+![GitHub Issues](https://img.shields.io/github/issues/KhubaibKhan4/Alert-KMP)
+![GitHub Pull Requests](https://img.shields.io/github/issues-pr/KhubaibKhan4/Alert-KMP)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/KhubaibKhan4/Alert-KMP)
+![GitHub Stars](https://img.shields.io/github/stars/KhubaibKhan4/Alert-KMP?style=social)
 
-## What is it?
+## Overview
 
-It is the barebones library project intended to quickly bootstrap a Kotlin Multiplatform library, that is deployable to Maven Central.
+MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to display and play YouTube videos across Android, iOS, Web, and Desktop platforms using JetBrains Compose Multiplatform. It provides a unified API for video playback that seamlessly integrates into Kotlin's multiplatform ecosystem.
 
-It has only one function: generate the [Fibonacci sequence](https://en.wikipedia.org/wiki/Fibonacci_sequence) starting from platform-provided numbers. Also, it has a test for each platform just to be sure that tests run.
+## Features
 
-Note that no other actions or tools usually required for the library development are set up, such as [tracking of backwards compatibility]
-(https://kotlinlang.org/docs/jvm-api-guidelines-backward-compatibility.html#tools-designed-to-enforce-backward-compatibility), explicit API mode,
-licensing, contribution guideline, code of conduct and others.
+- **Platform Agnostic:** Supports Android, iOS, Web, and Desktop platforms through Kotlin Multiplatform.
+- **Compose Multiplatform Integration:** Seamlessly integrates with JetBrains Compose Multiplatform UI framework.
+- **YouTube Video Playback:** Easily load and play YouTube videos with minimal setup.
+- **Event Handling:** Provides callbacks and event listeners for video playback actions and events.
 
-## How do I build it?
+## Installation
 
-1. - [x] Clone this repository ot just [use it as template](https://github.com/Kotlin/multiplatform-library-template/generate)
-1. - [ ] Edit library module name and include it in [`settings.gradle.kts`](settings.gradle.kts#L18)
-1. - [ ] Edit [`groupId` and `version`](convention-plugins/src/main/kotlin/module.publication.gradle.kts#L10-L11)
-    1. If you need the Android support update namespace [there](library/build.gradle.kts#L38) too
-    1. If you don't need an Android support delete the [`android` section](library/build.gradle.kts#L37-L43)
-1. - [ ] Edit [build targets you need](library/build.gradle.kts#L9-L21)
+You can include Alert-KMP in your project by adding the following dependency:
 
-At this stage, you have everything set to work with Kotlin Multiplatform. The project should be buildable (but you might need to provide actual starting values for the platforms you need).
+**Version Catelog**
+```
+[versions]
+mediaPlayerKMP = "0.0.1"
 
-## How do I make it build on GitHub Actions?
+[libraries]
+alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
 
-To make it work on GitHub actions, you need to update the [`matrix` section in `gradle.yml`](.github/workflows/gradle.yml#L25-L34). If you didn't change platforms in `build.gradle.kts` you don't need to touch anything. But still read it to understand how it works.
+```
 
-Also, currently, it only runs tests, but you can change this behaviour as you wish by modifying `matrix` and the Gradle [build command](.github/workflows/gradle.yml#L52)
 
-## How do I deploy it to Maven Central?
+```groovy
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.1")
+```
 
-The most part of the job is already automated for you. However, deployment to Maven Central requires some manual work from your side. 
 
-1. - [ ] Create an account at [Sonatype issue tracker](https://issues.sonatype.org/secure/Signup!default.jspa)
-1. - [ ] [Create an issue](https://issues.sonatype.org/secure/CreateIssue.jspa?issuetype=21&pid=10134) to create new project for you
-1. - [ ] You will have to prove that you own your desired namespace
-1. - [ ] Create a GPG key with `gpg --gen-key`, use the same email address you used to sign up to the Sonatype Jira
-1. - [ ] Find your key id in the output of the previous command looking like `D89FAAEB4CECAFD199A2F5E612C6F735F7A9A519`
-1. - [ ] Upload your key to a keyserver, for example 
-    ```bash
-    gpg --send-keys --keyserver keyserver.ubuntu.com "<your key id>"
-    ```
-1. - [ ] Now you should create secrets available to your GitHub Actions
-    1. via `gh` command
-    ```bash
-    gh secret set OSSRH_GPG_SECRET_KEY -a actions --body "$(gpg --export-secret-key --armor "<your key id>")"
-    gh secret set OSSRH_GPG_SECRET_KEY_ID -a actions --body "<your key id>"
-    gh secret set OSSRH_GPG_SECRET_KEY_PASSWORD -a actions --body "<your key password>"
-    gh secret set OSSRH_PASSWORD -a actions --body "<your sonatype account password>"
-    gh secret set OSSRH_USERNAME -a actions --body "<your sonatype account username>"
-    ```
-    1. Or via the interface in `Settings` → `Secrets and Variables` → `Actions`, same variables as in 1.
-1. - [ ] Edit deployment pom parameters in [`module.publication.gradle.kts`](convention-plugins/src/main/kotlin/module.publication.gradle.kts#L25-L44)
-1. - [ ] Edit deploy targets in [`deploy.yml`](.github/workflows/deploy.yml#L23-L36)
-1. - [ ] Call deployment manually when ready [in Actions](../../actions/workflows/deploy.yml) → `Run Workflow`
-1. - [ ] When you see in your account on https://oss.sonatype.org that everything is fine, you can release your staging repositories and add target `releaseSonatypeStagingRepository` to `deploy.yml` [after this line](.github/workflows/deploy.yml#L60). This way artifacts will be published to central automatically when tests pass.
+## Usage
+```groovy
+import io.github.khubaibkhan4.alert.Notify
+
+fun main() {
+    Notify("Hello, World!")
+}
+```
+
+## 🤝 Connect with Me
+
+Let's chat about potential projects, job opportunities, or any other collaboration! Feel free to connect with me through the following channels:
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/khubaibkhandev)
+[![Twitter](https://img.shields.io/badge/Twitter-Follow-blue?style=for-the-badge&logo=twitter)](https://twitter.com/codespacepro)
+[![Email](https://img.shields.io/badge/Email-Drop%20a%20Message-red?style=for-the-badge&logo=gmail)](mailto:18.bscs.803@gmail.com)
+
+  ## 💰 You can help me by Donating
+  [![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/khubaibkhan) [![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://paypal.me/18.bscs) [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://patreon.com/MuhammadKhubaibImtiaz) [![Ko-Fi](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/muhammadkhubaibimtiaz) 
+
+## Screenshots
+| <img src="https://github.com/KhubaibKhan4/Alert-KMP/blob/master/assests/screenshots/1.png" alt="Mobile Screenshot" width="300"> |
+ ![Screenshot 2](https://github.com/KhubaibKhan4/Alert-KMP/blob/master/assests/screenshots/2.png) 
+ ![Screenshot 3](https://github.com/KhubaibKhan4/Alert-KMP/blob/master/assests/screenshots/3.png) 
+
+## Demo
+
+https://github.com/KhubaibKhan4/Alert-KMP/assets/98816544/f554204b-d484-49a3-b409-caa7e95c5d04
+
+
+
+  ## Contribution Guidelines
+We welcome contributions to the Alert-KMP Library Project! To contribute, please follow these guidelines:
+
+- **Reporting Bugs**: If you encounter a bug, please open an issue and provide detailed information about the bug, including steps to reproduce it.
+- **Suggesting Features**: We encourage you to suggest new features or improvements by opening an issue and describing your idea.
+- **Submitting Pull Requests**: If you'd like to contribute code, please fork the repository, create a new branch for your changes, and submit a pull request with a clear description of the changes.
+
+## Code of Conduct
+We expect all contributors and users of the Alert-KMP Library Project to adhere to our code of conduct. Please review the [Code of Conduct](CODE_OF_CONDUCT.md) for details on expected behavior and reporting procedures.
