@@ -1,11 +1,11 @@
 # Alert-KMP
 
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.khubaibkhan4/alert-kmp.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.khubaibkhan4/alert-kmp)
-![GitHub License](https://img.shields.io/github/license/KhubaibKhan4/Alert-KMP)
-![GitHub Issues](https://img.shields.io/github/issues/KhubaibKhan4/Alert-KMP)
-![GitHub Pull Requests](https://img.shields.io/github/issues-pr/KhubaibKhan4/Alert-KMP)
-![GitHub Last Commit](https://img.shields.io/github/last-commit/KhubaibKhan4/Alert-KMP)
-![GitHub Stars](https://img.shields.io/github/stars/KhubaibKhan4/Alert-KMP?style=social)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.khubaibkhan4/mediaplayer-kmp.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.khubaibkhan4/mediaplayer-kmp)
+![GitHub License](https://img.shields.io/github/license/KhubaibKhan4/MediaPlayer-KMP)
+![GitHub Issues](https://img.shields.io/github/issues/KhubaibKhan4/MediaPlayer-KMP)
+![GitHub Pull Requests](https://img.shields.io/github/issues-pr/KhubaibKhan4/MediaPlayer-KMP)
+![GitHub Last Commit](https://img.shields.io/github/last-commit/KhubaibKhan4/MediaPlayer-KMP)
+![GitHub Stars](https://img.shields.io/github/stars/KhubaibKhan4/MediaPlayer-KMP?style=social)
 
 ## Overview
 
