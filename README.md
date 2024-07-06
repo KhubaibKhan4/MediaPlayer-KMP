@@ -25,7 +25,7 @@ You can include Alert-KMP in your project by adding the following dependency:
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "0.0.2"
+mediaPlayerKMP = "0.0.5"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -34,7 +34,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.2")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.5")
 ```
 
 
@@ -43,7 +43,17 @@ implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.2")
 import io.github.khubaibkhan4.alert.Notify
 
 fun main() {
-    Notify("Hello, World!")
+ var isPlay by remember{
+            mutableStateOf(false)
+        }
+   VideoPlayer(
+                    modifier = Modifier.fillMaxWidth().height(340.dp),
+                    url ="https://www.youtube.com/watch?v=AD2nEllUMJw",
+                    thumbnail = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Big_Buck_Bunny_thumbnail_vlc.png/1200px-Big_Buck_Bunny_thumbnail_vlc.png",
+                    onPlayClick = {
+                        isPlay = !isPlay
+                    }
+                )
 }
 ```
 
