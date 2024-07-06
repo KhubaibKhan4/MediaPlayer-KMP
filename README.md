@@ -1,4 +1,4 @@
-# Alert-KMP
+# MediaPlayer-KMP
 
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.khubaibkhan4/mediaplayer-kmp.svg?label=Maven%20Central)](https://search.maven.org/artifact/io.github.khubaibkhan4/mediaplayer-kmp)
 ![GitHub License](https://img.shields.io/github/license/KhubaibKhan4/MediaPlayer-KMP)
