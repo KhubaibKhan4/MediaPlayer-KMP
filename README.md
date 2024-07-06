@@ -25,7 +25,7 @@ You can include Alert-KMP in your project by adding the following dependency:
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "0.0.1"
+mediaPlayerKMP = "0.0.2"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -34,7 +34,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.1")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.2")
 ```
 
 
@@ -70,7 +70,7 @@ https://github.com/KhubaibKhan4/Alert-KMP/assets/98816544/f554204b-d484-49a3-b40
 
 
   ## Contribution Guidelines
-We welcome contributions to the Alert-KMP Library Project! To contribute, please follow these guidelines:
+We welcome contributions to the MediaPlayer-KMP Library Project! To contribute, please follow these guidelines:
 
 - **Reporting Bugs**: If you encounter a bug, please open an issue and provide detailed information about the bug, including steps to reproduce it.
 - **Suggesting Features**: We encourage you to suggest new features or improvements by opening an issue and describing your idea.
