@@ -65,7 +65,7 @@ import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
    VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
-               url ="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
+               url ="https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
      )
 }
 ```
