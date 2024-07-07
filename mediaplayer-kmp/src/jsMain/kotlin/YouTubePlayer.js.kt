@@ -1,86 +1,29 @@
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import io.kamel.core.Resource
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
-import kotlinx.browser.document
 
 @Composable
 actual fun VideoPlayer(
     modifier: Modifier,
-    url: String?,
-    thumbnail: String?,
-    onPlayClick: () -> Unit,
+    url: String,
 ) {
-    var isPlaying by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
+    when {
+        url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
+            val videoId = extractVideoId(url.toString())
+            HTMLVideoPlayer(modifier, videoId) {
 
-    if (isPlaying) {
-        when {
-            url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
-                val videoId = extractVideoId(url.toString())
-                HTMLVideoPlayer(modifier, videoId) {
-                    isLoading = it
-                }
-            }
-
-            isVideoFile(url) -> {
-                url?.let {
-                    HTMLMP4Player(modifier, videoURL = it) {
-                        isLoading = it
-                    }
-                }
             }
         }
-    } else {
-        Box(modifier = modifier.fillMaxWidth()) {
-            val image: Resource<Painter> = asyncPainterResource(thumbnail.toString())
-            KamelImage(
-                resource = image,
-                contentDescription = "Thumbnail Image",
-                contentScale = ContentScale.Crop,
-                onFailure = {
-                    isLoading = false
-                },
-                onLoading = {
-                    isLoading = true
-                },
-                modifier =modifier,
-            )
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(45.dp)
-                        .align(Alignment.Center)
-                        .clickable {
-                            onPlayClick()
-                            isPlaying = !isPlaying
-                        }
-                )
+
+        isVideoFile(url) -> {
+            url?.let {
+                HTMLMP4Player(modifier, videoURL = it)
             }
         }
     }
@@ -90,7 +33,6 @@ actual fun VideoPlayer(
 fun HTMLMP4Player(
     modifier: Modifier,
     videoURL: String,
-    onLoadingChange: (Boolean) -> Unit,
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -106,10 +48,10 @@ fun HTMLMP4Player(
                 video.setAttribute("src", videoURL)
                 video.setAttribute("controls", "true")
                 video.addEventListener("loadeddata", {
-                    onLoadingChange(false)
+                    println("Loading Video: false")
                 })
                 video.addEventListener("loadstart", {
-                    onLoadingChange(true)
+                    println("Loading Video: true")
                 })
                 video
             }

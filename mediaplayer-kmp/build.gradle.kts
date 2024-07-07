@@ -27,16 +27,10 @@ kotlin {
         browser()
         binaries.executable()
     }
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach {
-        it.binaries.framework {
-            baseName = "mediaplayer-kmp"
-            isStatic = true
-        }
-    }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
 
     sourceSets {
         val commonMain by getting {
@@ -46,7 +40,6 @@ kotlin {
                 implementation(compose.foundation)
                 implementation(compose.ui)
                 implementation(libs.kotlinx.coroutines.core)
-                implementation("media.kamel:kamel-image:0.9.5")
             }
         }
         val commonTest by getting {
@@ -109,7 +102,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "0.0.6"
+        version = "1.0.0"
     )
 
     // Configure POM metadata for the published artifact

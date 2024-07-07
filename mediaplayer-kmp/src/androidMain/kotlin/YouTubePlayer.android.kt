@@ -2,14 +2,9 @@ import android.os.Build
 import androidx.activity.ComponentActivity
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -19,11 +14,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -35,72 +27,25 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-import io.kamel.core.Resource
-import io.kamel.image.KamelImage
-import io.kamel.image.asyncPainterResource
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
 actual fun VideoPlayer(
     modifier: Modifier,
-    url: String?,
-    thumbnail: String?,
-    onPlayClick: () -> Unit,
+    url: String,
 ) {
-    var isPlaying by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
-
-    if (isPlaying) {
-        when {
-            url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
-                val videoId = extractVideoId(url)
-                if (videoId != null) {
-                    YoutubeVideoPlayer(youtubeURL = url)
-                } else {
-                    // Handle invalid YouTube URL
-                    isPlaying = false
-                }
-            }
-
-            isVideoFile(url) -> {
-                ExoPlayerVideoPlayer(videoURL = url!!)
-            }
-
-            else -> {
-                // Handle invalid video URL
-                isPlaying = false
+    when {
+        url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
+            val videoId = extractVideoId(url)
+            if (videoId != null) {
+                YoutubeVideoPlayer(youtubeURL = url)
+            } else {
+                println("Video Id is Null or Invalid")
             }
         }
-    } else {
-        Box(modifier = modifier.fillMaxWidth()) {
-            val image: Resource<Painter> = asyncPainterResource(thumbnail.toString())
-            KamelImage(
-                resource = image,
-                contentDescription = "Thumbnail Image",
-                contentScale = ContentScale.Crop,
-                onFailure = {
-                    isLoading = false
-                },
-                onLoading = {
-                    isLoading = true
-                },
-                modifier = modifier,
-            )
-            if (isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            } else {
-                Icon(
-                    imageVector = Icons.Default.PlayArrow,
-                    contentDescription = null,
-                    modifier = Modifier.size(45.dp)
-                        .align(Alignment.Center)
-                        .clickable {
-                            onPlayClick()
-                            isPlaying = !isPlaying
-                        },
-                    tint = Color.White
-                )
-            }
+
+        isVideoFile(url) -> {
+            ExoPlayerVideoPlayer(videoURL = url!!)
         }
     }
 }

@@ -35,14 +35,8 @@ import kotlinx.cinterop.ExperimentalForeignApi
 @Composable
 actual fun VideoPlayer(
     modifier: Modifier,
-    url: String?,
-    thumbnail: String?,
-    onPlayClick: () -> Unit
+    url: String,
 ) {
-    var isPlaying by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
-
-    if (isPlaying) {
         val player = remember {
             when {
                 url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
@@ -80,40 +74,6 @@ actual fun VideoPlayer(
             },
             modifier = modifier
         )
-    } else {
-        Box(modifier = modifier.fillMaxWidth()) {
-            val uiImage = remember(thumbnail) {
-                thumbnail?.let {
-                    URL(string: it)?.let {
-                        NSData(contentsOf: it)?.let {
-                            UIImage(data: it)
-                        }
-                    }
-                }
-            }
-            if (uiImage != null) {
-                Image(uiImage = uiImage)
-                    .resizable()
-                    .modifier(modifier)
-                    .onAppear {
-                        isLoading = false
-                    }
-            } else {
-                isLoading = false
-            }
-            if (isLoading) {
-                ProgressView().modifier(Modifier.align(Alignment.Center))
-            } else {
-                Image(systemName: "play.circle.fill")
-                .resizable()
-                    .frame(width: 45.dp, height: 45.dp)
-                .modifier(Modifier.align(Alignment.Center).clickable {
-                    onPlayClick()
-                    isPlaying = !isPlaying
-                })
-            }
-        }
-    }
 }
 
 fun isVideoFile(url: String?): Boolean {
