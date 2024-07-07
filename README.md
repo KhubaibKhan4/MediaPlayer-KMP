@@ -41,8 +41,9 @@ implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.6")
 ## Usage
 
 ### YouTube Video Player
+For the YouTube Player, you just need to provide the youtube video link. It will automatically detect it & will launch the YouTube Player.
 ```groovy
-import io.github.khubaibkhan4.alert.Notify
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
  var isPlay by remember{mutableStateOf(false)}
@@ -57,8 +58,10 @@ fun main() {
 ```
 
 ###  Video Player
+For the YouTube Player, you just need to provide the youtube video link. It will automatically detect it & will launch the YouTube Player. It almost supports all the video extensions.
+
 ```groovy
-import io.github.khubaibkhan4.alert.Notify
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
  var isPlay by remember{mutableStateOf(false)}
