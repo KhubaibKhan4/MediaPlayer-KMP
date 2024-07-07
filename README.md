@@ -87,7 +87,9 @@ Let's chat about potential projects, job opportunities, or any other collaborati
  ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/4.png) 
 
 ## Demo
-https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/e9f259b3-d166-4daa-a92f-3452621a423d
+
+https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/657ad29d-5129-4f78-af56-ad354ba0935d
+
 
 ## Desktop Demo
 
