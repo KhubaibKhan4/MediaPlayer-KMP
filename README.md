@@ -7,6 +7,11 @@
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/KhubaibKhan4/MediaPlayer-KMP)
 ![GitHub Stars](https://img.shields.io/github/stars/KhubaibKhan4/MediaPlayer-KMP?style=social)
 
+![Supported Platforms](https://img.shields.io/badge/platform-Android-green.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-iOS-blue.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-JS-yellow.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-JVM-red.svg)
+
 ## Overview
 
 MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to display and play YouTube videos across Android, iOS, Web, and Desktop platforms using JetBrains Compose Multiplatform. It provides a unified API for video playback that seamlessly integrates into Kotlin's multiplatform ecosystem.
@@ -25,7 +30,7 @@ You can include Alert-KMP in your project by adding the following dependency:
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "0.0.5"
+mediaPlayerKMP = "0.0.6"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -34,26 +39,44 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.5")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.6")
 ```
 
 
 ## Usage
+
+### YouTube Video Player
+For the YouTube Player, you just need to provide the youtube video link. It will automatically detect it & will launch the YouTube Player.
 ```groovy
-import io.github.khubaibkhan4.alert.Notify
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
- var isPlay by remember{
-            mutableStateOf(false)
-        }
-   VideoPlayer(
-                    modifier = Modifier.fillMaxWidth().height(340.dp),
-                    url ="https://www.youtube.com/watch?v=AD2nEllUMJw",
-                    thumbnail = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Big_Buck_Bunny_thumbnail_vlc.png/1200px-Big_Buck_Bunny_thumbnail_vlc.png",
-                    onPlayClick = {
-                        isPlay = !isPlay
-                    }
-                )
+ var isPlay by remember{mutableStateOf(false)}
+   VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
+               url ="https://www.youtube.com/watch?v=AD2nEllUMJw", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
+               thumbnail = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Big_Buck_Bunny_thumbnail_vlc.png/1200px-Big_Buck_Bunny_thumbnail_vlc.png",
+               onPlayClick = {
+               isPlay = !isPlay
+               }
+     )
+}
+```
+
+###  Video Player
+For the YouTube Player, you just need to provide the youtube video link. It will automatically detect it & will launch the YouTube Player. It almost supports all the video extensions.
+
+```groovy
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
+
+fun main() {
+ var isPlay by remember{mutableStateOf(false)}
+   VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
+               url ="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
+               thumbnail = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Big_Buck_Bunny_thumbnail_vlc.png/1200px-Big_Buck_Bunny_thumbnail_vlc.png",
+               onPlayClick = {
+               isPlay = !isPlay
+               }
+     )
 }
 ```
 
