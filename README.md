@@ -30,7 +30,7 @@ You can include Alert-KMP in your project by adding the following dependency:
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "0.0.6"
+mediaPlayerKMP = "1.0.0"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -39,7 +39,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:0.0.6")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.0")
 ```
 
 
