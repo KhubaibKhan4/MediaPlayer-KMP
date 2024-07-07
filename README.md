@@ -51,13 +51,8 @@ For the YouTube Player, you just need to provide the youtube video link. It will
 import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
- var isPlay by remember{mutableStateOf(false)}
    VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
                url ="https://www.youtube.com/watch?v=AD2nEllUMJw", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
-               thumbnail = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Big_Buck_Bunny_thumbnail_vlc.png/1200px-Big_Buck_Bunny_thumbnail_vlc.png",
-               onPlayClick = {
-               isPlay = !isPlay
-               }
      )
 }
 ```
@@ -69,13 +64,8 @@ For the YouTube Player, you just need to provide the youtube video link. It will
 import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
- var isPlay by remember{mutableStateOf(false)}
    VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
                url ="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
-               thumbnail = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Big_Buck_Bunny_thumbnail_vlc.png/1200px-Big_Buck_Bunny_thumbnail_vlc.png",
-               onPlayClick = {
-               isPlay = !isPlay
-               }
      )
 }
 ```
