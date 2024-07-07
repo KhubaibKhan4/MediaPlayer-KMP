@@ -75,7 +75,6 @@ Let's chat about potential projects, job opportunities, or any other collaborati
 
 ## Demo
 
-https://github.com/KhubaibKhan4/Alert-KMP/assets/98816544/f554204b-d484-49a3-b409-caa7e95c5d04
 
 
 
