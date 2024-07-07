@@ -7,6 +7,11 @@
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/KhubaibKhan4/MediaPlayer-KMP)
 ![GitHub Stars](https://img.shields.io/github/stars/KhubaibKhan4/MediaPlayer-KMP?style=social)
 
+![Supported Platforms](https://img.shields.io/badge/platform-Android-green.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-iOS-blue.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-JS-yellow.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-JVM-red.svg)
+
 ## Overview
 
 MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to display and play YouTube videos across Android, iOS, Web, and Desktop platforms using JetBrains Compose Multiplatform. It provides a unified API for video playback that seamlessly integrates into Kotlin's multiplatform ecosystem.
