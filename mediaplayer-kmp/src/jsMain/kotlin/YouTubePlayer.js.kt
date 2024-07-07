@@ -18,8 +18,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
+import io.kamel.core.Resource
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 import kotlinx.browser.document
 
 @Composable
@@ -51,23 +55,19 @@ actual fun VideoPlayer(
         }
     } else {
         Box(modifier = modifier.fillMaxWidth()) {
-            coil3.compose.AsyncImage(
-                modifier = modifier.fillMaxWidth(),
-                model = thumbnail,
+            val image: Resource<Painter> = asyncPainterResource(thumbnail.toString())
+            KamelImage(
+                resource = image,
                 contentDescription = "Thumbnail Image",
                 contentScale = ContentScale.Crop,
-
-                onError = {
+                onFailure = {
                     isLoading = false
                 },
                 onLoading = {
                     isLoading = true
                 },
-                onSuccess = {
-                    isLoading = false
-                },
-
-                )
+                modifier =modifier,
+            )
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             } else {

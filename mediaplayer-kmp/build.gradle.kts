@@ -23,11 +23,6 @@ kotlin {
         }
         publishLibraryVariants("release", "debug")
     }
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        browser()
-        binaries.executable()
-    }
     js {
         browser()
         binaries.executable()
@@ -50,11 +45,8 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.foundation)
                 implementation(compose.ui)
-                implementation(libs.ktor.client.core)
-                implementation(libs.coil.compose.core)
-                implementation(libs.coil.compose)
-                implementation(libs.coil.mp)
-                implementation(libs.coil.network.ktor)
+                implementation(libs.kotlinx.coroutines.core)
+                implementation("media.kamel:kamel-image:0.9.5")
             }
         }
         val commonTest by getting {
@@ -74,6 +66,7 @@ kotlin {
                 implementation("androidx.media3:media3-exoplayer:1.3.1")
                 implementation("androidx.media3:media3-exoplayer-dash:1.3.1")
                 implementation("androidx.media3:media3-ui:1.3.1")
+                implementation(libs.kotlinx.coroutines.android)
             }
         }
         val jvmMain by getting {
@@ -94,6 +87,7 @@ kotlin {
                 implementation("org.openjfx:javafx-swing:19:${fxSuffix}")
                 implementation("org.openjfx:javafx-web:19:${fxSuffix}")
                 implementation("org.openjfx:javafx-media:19:${fxSuffix}")
+                implementation(libs.kotlinx.coroutines.swing)
             }
         }
         val jsMain by getting {
@@ -115,7 +109,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "0.0.5"
+        version = "0.0.6"
     )
 
     // Configure POM metadata for the published artifact

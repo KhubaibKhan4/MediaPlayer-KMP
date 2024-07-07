@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -27,15 +28,16 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.request.ImageRequest
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import io.kamel.core.Resource
+import io.kamel.image.KamelImage
+import io.kamel.image.asyncPainterResource
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -43,8 +45,8 @@ actual fun VideoPlayer(
     modifier: Modifier,
     url: String?,
     thumbnail: String?,
-    onPlayClick: () -> Unit
-)  {
+    onPlayClick: () -> Unit,
+) {
     var isPlaying by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
 
@@ -59,9 +61,11 @@ actual fun VideoPlayer(
                     isPlaying = false
                 }
             }
+
             isVideoFile(url) -> {
                 ExoPlayerVideoPlayer(videoURL = url!!)
             }
+
             else -> {
                 // Handle invalid video URL
                 isPlaying = false
@@ -69,22 +73,18 @@ actual fun VideoPlayer(
         }
     } else {
         Box(modifier = modifier.fillMaxWidth()) {
-            AsyncImage(
-                modifier = modifier.fillMaxWidth(),
-                model = ImageRequest.Builder(LocalPlatformContext.current)
-                    .data(thumbnail)
-                    .build(),
+            val image: Resource<Painter> = asyncPainterResource(thumbnail.toString())
+            KamelImage(
+                resource = image,
                 contentDescription = "Thumbnail Image",
                 contentScale = ContentScale.Crop,
-                onError = {
+                onFailure = {
                     isLoading = false
                 },
                 onLoading = {
                     isLoading = true
                 },
-                onSuccess = {
-                    isLoading = false
-                }
+                modifier = modifier,
             )
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -108,33 +108,53 @@ actual fun VideoPlayer(
 @Composable
 fun ExoPlayerVideoPlayer(videoURL: String) {
     val context = LocalContext.current
-    val exoPlayer = remember { ExoPlayer.Builder(context).build() }
-    DisposableEffect(
-        key1 = exoPlayer,
-        effect = {
-            exoPlayer.setMediaItem(MediaItem.fromUri(videoURL))
-            exoPlayer.prepare()
-            exoPlayer.playWhenReady = true
-            onDispose {
-                exoPlayer.release()
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build()
+    }
+    var isLoading by remember { mutableStateOf(true) }
+
+    DisposableEffect(exoPlayer) {
+        val mediaItem = MediaItem.fromUri(videoURL)
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+        exoPlayer.addListener(object : Player.Listener {
+            override fun onPlaybackStateChanged(playbackState: Int) {
+                super.onPlaybackStateChanged(playbackState)
+                isLoading = playbackState == Player.STATE_BUFFERING
             }
+        })
+        exoPlayer.playWhenReady = true
+
+        onDispose {
+            exoPlayer.release()
         }
-    )
-    AndroidView(
-        factory = {
-            PlayerView(context).apply {
-                player = exoPlayer
-            }
-        },
-        update = {
-            it.player = exoPlayer
-        },
-        modifier = Modifier.fillMaxWidth()
-    )
+    }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        AndroidView(
+            factory = {
+                PlayerView(context).apply {
+                    player = exoPlayer
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
 }
 
 fun isVideoFile(url: String?): Boolean {
-    return url?.matches(Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg)\$", RegexOption.IGNORE_CASE)) == true
+    return url?.matches(
+        Regex(
+            ".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg)\$",
+            RegexOption.IGNORE_CASE
+        )
+    ) == true
 }
 
 @RequiresApi(Build.VERSION_CODES.S)
@@ -244,7 +264,8 @@ fun YoutubeVideoPlayer(
 
 fun extractVideoId(url: String?): String? {
     return url?.let {
-        val regex = Regex("""(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})""")
+        val regex =
+            Regex("""(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})""")
         regex.find(it)?.groupValues?.get(1)
     }
 }
