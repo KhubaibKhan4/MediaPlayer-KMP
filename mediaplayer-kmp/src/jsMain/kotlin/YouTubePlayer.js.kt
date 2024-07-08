@@ -14,17 +14,15 @@ actual fun VideoPlayer(
     url: String,
 ) {
     when {
-        url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
-            val videoId = extractVideoId(url.toString())
+        url.contains("youtube.com") || url.contains("youtu.be") -> {
+            val videoId = extractVideoId(url)
             HTMLVideoPlayer(modifier, videoId) {
 
             }
         }
 
         isVideoFile(url) -> {
-            url?.let {
-                HTMLMP4Player(modifier, videoURL = it)
-            }
+                HTMLMP4Player(modifier, videoURL = url)
         }
     }
 }

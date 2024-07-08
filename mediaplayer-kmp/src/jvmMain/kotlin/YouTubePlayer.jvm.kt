@@ -15,8 +15,8 @@ actual fun VideoPlayer(
 ) {
 
     when {
-        url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
-            val videoId = splitLinkForVideoId(url.toString())
+        url.contains("youtube.com") || url.contains("youtu.be") -> {
+            val videoId = splitLinkForVideoId(url)
             DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId") {
 
             }
