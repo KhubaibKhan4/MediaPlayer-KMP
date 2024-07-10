@@ -72,6 +72,17 @@ fun main() {
 }
 ```
 
+## Audio Player Support
+```groovy
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
+
+fun main() {
+   VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
+               url ="https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
+     )
+}
+```
+
 ## 🤝 Connect with Me
 
 Let's chat about potential projects, job opportunities, or any other collaboration! Feel free to connect with me through the following channels:
