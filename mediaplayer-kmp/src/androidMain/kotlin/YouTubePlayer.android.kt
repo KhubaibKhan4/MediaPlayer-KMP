@@ -239,10 +239,11 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
     var currentTime by remember { mutableStateOf(0L) }
     var duration by remember { mutableStateOf(0L) }
 
-    DisposableEffect(exoPlayer) {
+    DisposableEffect(audioURL) {
         val mediaItem = MediaItem.fromUri(audioURL)
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
+        exoPlayer.playWhenReady = true
 
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -250,7 +251,6 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
                 if (state == Player.STATE_READY) {
                     duration = exoPlayer.duration
                     isPlayingAudio = true
-                    exoPlayer.play()
                 }
             }
 
@@ -258,6 +258,7 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
                 isPlayingAudio = isPlaying
             }
 
+            @Deprecated("Deprecated in Java")
             override fun onPositionDiscontinuity(reason: Int) {
                 currentTime = exoPlayer.currentPosition
             }

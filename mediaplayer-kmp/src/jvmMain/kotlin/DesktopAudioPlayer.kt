@@ -43,21 +43,23 @@ fun DesktopAudioPlayer(
     val volume = remember { mutableStateOf(0.5) }
 
     DisposableEffect(audioURL) {
-        val media = Media(audioURL)
-        val mediaPlayer = MediaPlayer(media).apply {
-            setOnReady {
-                duration.value = media.duration.toSeconds()
-                isLoaded.value = true
+        Platform.startup {
+            val media = Media(audioURL)
+            val mediaPlayer = MediaPlayer(media).apply {
+                setOnReady {
+                    duration.value = media.duration.toSeconds()
+                    isLoaded.value = true
+                }
+                currentTimeProperty().addListener { _, _, newValue ->
+                    currentTime.value = newValue.toSeconds()
+                }
+                setOnEndOfMedia {
+                    isPlaying.value = false
+                }
+                volumeProperty().value = volume.value
             }
-            currentTimeProperty().addListener { _, _, newValue ->
-                currentTime.value = newValue.toSeconds()
-            }
-            setOnEndOfMedia {
-                isPlaying.value = false
-            }
-            volumeProperty().value = volume.value
+            mediaPlayerState.value = mediaPlayer
         }
-        mediaPlayerState.value = mediaPlayer
 
         onDispose {
             mediaPlayerState.value?.dispose()
