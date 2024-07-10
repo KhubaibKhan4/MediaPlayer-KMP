@@ -1,10 +1,22 @@
 import android.os.Build
 import androidx.activity.ComponentActivity
+import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -16,11 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
@@ -215,10 +229,15 @@ fun extractVideoId(url: String?): String? {
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
 fun ExoPlayerAudioPlayer(audioURL: String) {
     val context = LocalContext.current
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
+    var isPlayingAudio by remember { mutableStateOf(true) }
+    var isLoading by remember { mutableStateOf(true) }
+    var currentTime by remember { mutableStateOf(0L) }
+    var duration by remember { mutableStateOf(0L) }
 
     DisposableEffect(exoPlayer) {
         val mediaItem = MediaItem.fromUri(audioURL)
@@ -226,20 +245,75 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true
 
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                isLoading = state == Player.STATE_BUFFERING
+                if (state == Player.STATE_READY) {
+                    duration = exoPlayer.duration
+                }
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                isPlayingAudio = exoPlayer.isPlaying
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun onPositionDiscontinuity(reason: Int) {
+                currentTime = exoPlayer.currentPosition
+            }
+        }
+        exoPlayer.addListener(listener)
+
         onDispose {
+            exoPlayer.removeListener(listener)
             exoPlayer.release()
         }
     }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
-        AndroidView(
-            factory = {
-                PlayerView(context).apply {
-                    player = exoPlayer
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator()
+        } else {
+            Slider(
+                value = currentTime.toFloat(),
+                onValueChange = { exoPlayer.seekTo(it.toLong()) },
+                valueRange = 0f..duration.toFloat(),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(formatTime(currentTime))
+                Text(formatTime(duration))
+            }
+
+            IconButton(onClick = {
+                if (isPlayingAudio) exoPlayer.pause() else exoPlayer.play()
+            }) {
+                Icon(
+                    imageVector = if (isPlayingAudio) Icons.Default.Pause else Icons.Default.PlayArrow,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
+
+fun formatTime(ms: Long): String {
+    val seconds = (ms / 1000) % 60
+    val minutes = (ms / (1000 * 60)) % 60
+    val hours = (ms / (1000 * 60 * 60)) % 24
+
+    return if (hours > 0) {
+        String.format("%02d:%02d:%02d", hours, minutes, seconds)
+    } else {
+        String.format("%02d:%02d", minutes, seconds)
     }
 }
 

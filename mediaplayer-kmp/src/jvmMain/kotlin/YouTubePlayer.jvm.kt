@@ -68,8 +68,11 @@ fun splitLinkForVideoId(
 @Composable
 actual fun MediaPlayer(modifier: Modifier, url: String) {
     when {
-        isVideoFile(url) -> {
+        isAudioFile(url) -> {
             DesktopAudioPlayer(modifier, audioURL = url)
         }
     }
+}
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
 }

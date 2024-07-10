@@ -38,6 +38,7 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.foundation)
                 implementation(compose.ui)
+                implementation(compose.materialIconsExtended)
                 implementation(libs.kotlinx.coroutines.core)
             }
         }
@@ -101,7 +102,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.0.1-Beta02"
+        version = "1.0.1"
     )
 
     // Configure POM metadata for the published artifact
