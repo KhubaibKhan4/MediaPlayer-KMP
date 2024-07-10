@@ -234,7 +234,7 @@ fun extractVideoId(url: String?): String? {
 fun ExoPlayerAudioPlayer(audioURL: String) {
     val context = LocalContext.current
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
-    var isPlayingAudio by remember { mutableStateOf(true) }
+    var isPlayingAudio by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
     var currentTime by remember { mutableStateOf(0L) }
     var duration by remember { mutableStateOf(0L) }
@@ -243,21 +243,21 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
         val mediaItem = MediaItem.fromUri(audioURL)
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
 
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
                 isLoading = state == Player.STATE_BUFFERING
                 if (state == Player.STATE_READY) {
                     duration = exoPlayer.duration
+                    isPlayingAudio = true
+                    exoPlayer.play()
                 }
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
-                isPlayingAudio = exoPlayer.isPlaying
+                isPlayingAudio = isPlaying
             }
 
-            @Deprecated("Deprecated in Java")
             override fun onPositionDiscontinuity(reason: Int) {
                 currentTime = exoPlayer.currentPosition
             }
