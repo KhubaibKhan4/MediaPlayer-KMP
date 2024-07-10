@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -22,7 +23,7 @@ actual fun VideoPlayer(
         }
 
         isVideoFile(url) -> {
-                HTMLMP4Player(modifier, videoURL = url)
+            HTMLMP4Player(modifier, videoURL = url)
         }
     }
 }
@@ -56,6 +57,7 @@ fun HTMLMP4Player(
         )
     }
 }
+
 @Composable
 fun HTMLAudioPlayer(
     modifier: Modifier,
@@ -75,6 +77,7 @@ fun HTMLAudioPlayer(
 fun isAudioFile(url: String?): Boolean {
     return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
 }
+
 @Composable
 fun HTMLVideoPlayer(
     modifier: Modifier,
@@ -129,7 +132,15 @@ fun isVideoFile(url: String?): Boolean {
 }
 
 @Composable
-actual fun MediaPlayer(modifier: Modifier, url: String) {
+actual fun MediaPlayer(
+    modifier: Modifier, url: String,
+    startTime: Color,
+    endTime: Color,
+    volumeIconColor: Color,
+    playIconColor: Color,
+    sliderTrackColor: Color,
+    sliderIndicatorColor: Color
+) {
     when {
         isAudioFile(url) -> {
             HTMLAudioPlayer(modifier, audioURL = url)

@@ -102,7 +102,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.0.6"
+        version = "1.0.8"
     )
 
     // Configure POM metadata for the published artifact

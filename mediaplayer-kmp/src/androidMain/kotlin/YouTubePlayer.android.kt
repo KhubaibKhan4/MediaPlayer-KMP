@@ -8,15 +8,20 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -43,6 +48,10 @@ import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstan
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -233,13 +242,22 @@ fun extractVideoId(url: String?): String? {
 
 @OptIn(UnstableApi::class)
 @Composable
-fun ExoPlayerAudioPlayer(audioURL: String) {
+fun ExoPlayerAudioPlayer(
+    audioURL: String,
+    startTime: Color,
+    endTime: Color,
+    volumeIconColor: Color,
+    playIconColor: Color,
+    sliderTrackColor: Color,
+    sliderIndicatorColor: Color
+) {
     val context = LocalContext.current
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     var isPlayingAudio by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
-    var currentTime by remember { mutableStateOf(0L) }
-    var duration by remember { mutableStateOf(0L) }
+    var currentTime by remember { mutableStateOf(0f) }
+    var duration by remember { mutableStateOf(0f) }
+    var volume by remember { mutableStateOf(1f) }
 
     DisposableEffect(audioURL) {
         val mediaItem = MediaItem.fromUri(audioURL)
@@ -251,25 +269,33 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
             override fun onPlaybackStateChanged(state: Int) {
                 isLoading = state == Player.STATE_BUFFERING
                 if (state == Player.STATE_READY) {
-                    duration = exoPlayer.duration
-                    isPlayingAudio = true
+                    duration = exoPlayer.duration.toFloat()
+                    isPlayingAudio = exoPlayer.isPlaying
+                }
+                if (state == Player.STATE_ENDED) {
+                    isPlayingAudio = false
                 }
             }
 
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 isPlayingAudio = isPlaying
             }
-
-            @Deprecated("Deprecated in Java")
-            override fun onPositionDiscontinuity(reason: Int) {
-                currentTime = exoPlayer.currentPosition
-            }
         }
         exoPlayer.addListener(listener)
+
+        val updateTimeJob = CoroutineScope(Dispatchers.Main).launch {
+            while (true) {
+                if (exoPlayer.isPlaying) {
+                    currentTime = exoPlayer.currentPosition.toFloat()
+                }
+                delay(1000L)
+            }
+        }
 
         onDispose {
             exoPlayer.removeListener(listener)
             exoPlayer.release()
+            updateTimeJob.cancel()
         }
     }
 
@@ -283,26 +309,53 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
             CircularProgressIndicator()
         } else {
             Slider(
-                value = currentTime.toFloat(),
+                value = currentTime,
                 onValueChange = { exoPlayer.seekTo(it.toLong()) },
-                valueRange = 0f..duration.toFloat(),
-                modifier = Modifier.fillMaxWidth()
+                valueRange = 0f..duration,
+                modifier = Modifier.fillMaxWidth(),
+                colors = SliderDefaults.colors(
+                    thumbColor = sliderIndicatorColor,
+                    activeTrackColor = sliderTrackColor
+                )
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(formatTime(currentTime))
-                Text(formatTime(duration))
+                Text(formatTime(currentTime.toLong()))
+                Text(formatTime(duration.toLong()))
             }
 
-            IconButton(onClick = {
-                if (isPlayingAudio) exoPlayer.pause() else exoPlayer.play()
-            }) {
-                Icon(
-                    imageVector = if (isPlayingAudio) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = null
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                IconButton(onClick = {
+                    if (isPlayingAudio) {
+                        exoPlayer.pause()
+                    } else {
+                        exoPlayer.play()
+                    }
+                }) {
+                    Icon(
+                        imageVector = if (isPlayingAudio) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        tint = playIconColor
+                    )
+                }
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                IconButton(onClick = {
+                    volume = if (volume == 1f) 0f else 1f
+                    exoPlayer.volume = volume
+                }) {
+                    Icon(
+                        imageVector = if (volume == 1f) Icons.Default.VolumeUp else Icons.Default.VolumeOff,
+                        contentDescription = null,
+                        tint = volumeIconColor
+                    )
+                }
             }
         }
     }
@@ -327,10 +380,26 @@ fun isAudioFile(url: String?): Boolean {
 }
 
 @Composable
-actual fun MediaPlayer(modifier: Modifier, url: String) {
+actual fun MediaPlayer(
+    modifier: Modifier, url: String,
+    startTime: Color,
+    endTime: Color,
+    volumeIconColor: Color,
+    playIconColor: Color,
+    sliderTrackColor: Color,
+    sliderIndicatorColor: Color
+) {
     when {
         isAudioFile(url) -> {
-            ExoPlayerAudioPlayer(audioURL = url)
+            ExoPlayerAudioPlayer(
+                audioURL = url,
+                startTime,
+                endTime,
+                volumeIconColor,
+                playIconColor,
+                sliderTrackColor,
+                sliderIndicatorColor
+            )
         }
     }
 }

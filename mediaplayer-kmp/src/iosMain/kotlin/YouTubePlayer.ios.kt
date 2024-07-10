@@ -27,6 +27,7 @@ import platform.darwin.*
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.interop.UIKitView
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -84,6 +85,12 @@ fun isVideoFile(url: String?): Boolean {
 actual fun MediaPlayer(
     modifier: Modifier,
     url: String,
+    startTime: Color,
+    endTime: Color,
+    volumeIconColor: Color,
+    playIconColor: Color,
+    sliderTrackColor: Color,
+    sliderIndicatorColor: Color
 ) {
     val player = remember {
         when {

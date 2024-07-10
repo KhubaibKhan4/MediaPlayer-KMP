@@ -11,6 +11,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -19,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.SwingPanel
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
@@ -33,7 +35,13 @@ import javax.swing.JPanel
 @Composable
 fun DesktopAudioPlayer(
     modifier: Modifier = Modifier,
-    audioURL: String
+    audioURL: String,
+    startTime: Color,
+    endTime: Color,
+    volumeIconColor: Color,
+    playIconColor: Color,
+    sliderTrackColor: Color,
+    sliderIndicatorColor: Color
 ) {
     val mediaPlayerState = remember { mutableStateOf<MediaPlayer?>(null) }
     val isPlaying = remember { mutableStateOf(false) }
@@ -90,35 +98,60 @@ fun DesktopAudioPlayer(
                 }) {
                     Icon(
                         imageVector = if (isPlaying.value) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = null
+                        contentDescription = null,
+                        tint = playIconColor
                     )
                 }
 
-                Text(formatTime(currentTime.value), modifier = Modifier.padding(start = 8.dp))
+                Text(
+                    formatTime(currentTime.value),
+                    modifier = Modifier.padding(start = 8.dp),
+                    color = startTime
+                )
                 Slider(
                     value = currentTime.value.toFloat(),
                     onValueChange = {
                         mediaPlayerState.value?.seek(Duration.seconds(it.toDouble()))
                     },
                     valueRange = 0f..duration.value.toFloat(),
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
+                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                    colors = SliderDefaults.colors(
+                        thumbColor = sliderIndicatorColor,
+                        activeTrackColor = sliderTrackColor
+                    )
                 )
-                Text(formatTime(duration.value), modifier = Modifier.padding(end = 8.dp))
+                Text(
+                    formatTime(duration.value),
+                    modifier = Modifier.padding(end = 8.dp),
+                    color = endTime
+                )
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     IconButton(onClick = {
                         volume.value = (volume.value + 0.1).coerceIn(0.0, 1.0)
                         mediaPlayerState.value?.volume = volume.value
                     }) {
-                        Icon(imageVector = Icons.Default.VolumeUp, contentDescription = "Increase Volume")
+                        Icon(
+                            imageVector = Icons.Default.VolumeUp,
+                            contentDescription = "Increase Volume",
+                            tint = volumeIconColor
+                        )
                     }
                     IconButton(onClick = {
                         volume.value = (volume.value - 0.1).coerceIn(0.0, 1.0)
                         mediaPlayerState.value?.volume = volume.value
                     }) {
-                        Icon(imageVector = Icons.Default.VolumeDown, contentDescription = "Decrease Volume")
+                        Icon(
+                            imageVector = Icons.Default.VolumeDown,
+                            contentDescription = "Decrease Volume",
+                            tint = volumeIconColor
+                        )
                     }
-                    Text("${(volume.value * 100).toInt()}%", modifier = Modifier.padding(4.dp))
+                    Text(
+                        "${(volume.value * 100).toInt()}%",
+                        modifier = Modifier.padding(4.dp),
+                        color = endTime
+                    )
                 }
             }
         }

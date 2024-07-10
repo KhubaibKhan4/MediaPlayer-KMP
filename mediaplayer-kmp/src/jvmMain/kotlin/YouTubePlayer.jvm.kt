@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 
 @Composable
 actual fun VideoPlayer(
@@ -66,13 +67,31 @@ fun splitLinkForVideoId(
 }
 
 @Composable
-actual fun MediaPlayer(modifier: Modifier, url: String) {
+actual fun MediaPlayer(
+    modifier: Modifier, url: String,
+    startTime: Color,
+    endTime: Color,
+    volumeIconColor: Color,
+    playIconColor: Color,
+    sliderTrackColor: Color,
+    sliderIndicatorColor: Color
+) {
     when {
         isAudioFile(url) -> {
-            DesktopAudioPlayer(modifier, audioURL = url)
+            DesktopAudioPlayer(
+                modifier,
+                audioURL = url,
+                startTime,
+                endTime,
+                volumeIconColor,
+                playIconColor,
+                sliderTrackColor,
+                sliderIndicatorColor
+            )
         }
     }
 }
+
 fun isAudioFile(url: String?): Boolean {
     return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
 }
