@@ -79,3 +79,51 @@ actual fun VideoPlayer(
 fun isVideoFile(url: String?): Boolean {
     return url?.matches(Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg)\$", RegexOption.IGNORE_CASE)) == true
 }
+@OptIn(ExperimentalForeignApi::class)
+@Composable
+actual fun MediaPlayer(
+    modifier: Modifier,
+    url: String,
+) {
+    val player = remember {
+        when {
+            url.contains("youtube.com") || url.contains("youtu.be") -> {
+                NSURL.URLWithString(url)?.let { AVPlayer(uRL = it) }
+            }
+            isVideoFile(url) || isAudioFile(url) -> {
+                NSURL.URLWithString(url)?.let { AVPlayer(uRL = it) }
+            }
+            else -> null
+        }
+    }
+    val playerLayer = remember { AVPlayerLayer() }
+    val avPlayerViewController = remember { AVPlayerViewController() }
+    avPlayerViewController.player = player
+    avPlayerViewController.showsPlaybackControls = true
+
+    playerLayer.player = player
+    UIKitView(
+        factory = {
+            val playerContainer = UIView()
+            playerContainer.addSubview(avPlayerViewController.view)
+            playerContainer
+        },
+        onResize = { view: UIView, rect: CValue<CGRect> ->
+            CATransaction.begin()
+            CATransaction.setValue(true, kCATransactionDisableActions)
+            view.layer.setFrame(rect)
+            playerLayer.setFrame(rect)
+            avPlayerViewController.view.layer.frame = rect
+            CATransaction.commit()
+        },
+        update = { view ->
+            player?.play()
+            avPlayerViewController.player?.play()
+        },
+        modifier = modifier
+    )
+}
+
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
+}

@@ -64,3 +64,12 @@ fun splitLinkForVideoId(
 ): String {
     return url?.substringAfter("v=").toString()
 }
+
+@Composable
+actual fun MediaPlayer(modifier: Modifier, url: String) {
+    when {
+        isVideoFile(url) -> {
+            DesktopAudioPlayer(modifier, audioURL = url)
+        }
+    }
+}

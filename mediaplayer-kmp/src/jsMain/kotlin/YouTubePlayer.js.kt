@@ -56,7 +56,25 @@ fun HTMLMP4Player(
         )
     }
 }
+@Composable
+fun HTMLAudioPlayer(
+    modifier: Modifier,
+    audioURL: String,
+) {
+    HtmlView(
+        modifier = modifier.fillMaxSize(),
+        factory = {
+            val audio = createElement("audio")
+            audio.setAttribute("controls", "true")
+            audio.setAttribute("src", audioURL)
+            audio
+        }
+    )
+}
 
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
+}
 @Composable
 fun HTMLVideoPlayer(
     modifier: Modifier,
@@ -108,4 +126,13 @@ fun isVideoFile(url: String?): Boolean {
             RegexOption.IGNORE_CASE
         )
     ) == true
+}
+
+@Composable
+actual fun MediaPlayer(modifier: Modifier, url: String) {
+    when {
+        isAudioFile(url) -> {
+            HTMLAudioPlayer(modifier, audioURL = url)
+        }
+    }
 }

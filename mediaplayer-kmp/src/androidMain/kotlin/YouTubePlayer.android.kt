@@ -214,3 +214,46 @@ fun extractVideoId(url: String?): String? {
         regex.find(it)?.groupValues?.get(1)
     }
 }
+
+@Composable
+fun ExoPlayerAudioPlayer(audioURL: String) {
+    val context = LocalContext.current
+    val exoPlayer = remember { ExoPlayer.Builder(context).build() }
+
+    DisposableEffect(exoPlayer) {
+        val mediaItem = MediaItem.fromUri(audioURL)
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+        exoPlayer.playWhenReady = true
+
+        onDispose {
+            exoPlayer.release()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxWidth()) {
+        AndroidView(
+            factory = {
+                PlayerView(context).apply {
+                    player = exoPlayer
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(
+        Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)
+    ) == true
+}
+
+@Composable
+actual fun MediaPlayer(modifier: Modifier, url: String) {
+    when {
+        isAudioFile(url) -> {
+            ExoPlayerAudioPlayer(audioURL = url)
+        }
+    }
+}
