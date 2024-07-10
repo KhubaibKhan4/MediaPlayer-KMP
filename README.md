@@ -32,7 +32,7 @@ You can include Alert-KMP in your project by adding the following dependency:
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "1.0.7"
+mediaPlayerKMP = "1.0.8"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -41,7 +41,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.7")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.8")
 ```
 
 
@@ -80,7 +80,13 @@ import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 fun main() {
     MediaPlayer(
         modifier = Modifier.fillMaxWidth(),
-        url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Sevish_-__nbsp_.mp3"
+        url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
+        startTime = Color.Black,
+        endTime = Color.Black,
+        volumeIconColor = Color.Black,
+        playIconColor = Color.Blue,
+        sliderTrackColor = Color.LightGray,
+        sliderIndicatorColor = Color.Blue
     )
 }
 ```
