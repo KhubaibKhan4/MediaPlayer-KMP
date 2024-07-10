@@ -32,7 +32,7 @@ You can include Alert-KMP in your project by adding the following dependency:
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "1.0.6"
+mediaPlayerKMP = "1.0.7"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -41,7 +41,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.6")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.7")
 ```
 
 
@@ -99,12 +99,14 @@ Let's chat about potential projects, job opportunities, or any other collaborati
 ## Screenshots
  | ![Screenshot 1](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/1.png) | ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/2.png) | ![Screenshot 3](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/3.png) |
 | --- | --- | --- |
- ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/6.png) 
+ ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/6.png) | ![Screenshot_20240710_153958](https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/bbda1012-f4a9-46ad-824a-66a710c67c0b)
+
 
 | ![Screenshot 1](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/4.png) | 
 | --- |
 | ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/5.png) | 
-
+| ![Screenshot 2024-07-10 153852](https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/1238c26b-8553-459d-b606-7da89459eb04) |
+| ![Screenshot 2024-07-10 153944](https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/2bd8bd9e-298c-4488-8348-8f94b6705a66) |
 
 ## Demo
 
