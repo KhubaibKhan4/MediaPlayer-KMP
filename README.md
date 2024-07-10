@@ -11,6 +11,8 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-iOS-blue.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-JS-yellow.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-JVM-red.svg)
+<img src="https://img.shields.io/liberapay/patrons/KhubaibKhanDev.svg?logo=liberapay">
+
 
 ## Overview
 
