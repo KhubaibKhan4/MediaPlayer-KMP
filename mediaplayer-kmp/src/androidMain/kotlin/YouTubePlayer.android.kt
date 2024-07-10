@@ -235,32 +235,41 @@ fun extractVideoId(url: String?): String? {
 @Composable
 fun ExoPlayerAudioPlayer(audioURL: String) {
     val context = LocalContext.current
+    val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     var isPlayingAudio by remember { mutableStateOf(false) }
-    val isLoading by remember { mutableStateOf(true) }
-    val currentTime by remember { mutableStateOf(0L) }
+    var isLoading by remember { mutableStateOf(true) }
+    var currentTime by remember { mutableStateOf(0L) }
     var duration by remember { mutableStateOf(0L) }
 
-    val player = remember {
-        ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri(Uri.parse(audioURL))
-            setMediaItem(mediaItem)
-            prepare()
-            addListener(object : Player.Listener{
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    isPlayingAudio = isPlaying
-                }
+    DisposableEffect(audioURL) {
+        val mediaItem = MediaItem.fromUri(audioURL)
+        exoPlayer.setMediaItem(mediaItem)
+        exoPlayer.prepare()
+        exoPlayer.playWhenReady = true
 
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_READY){
-                        duration = duration.toLong()
-                    }
+        val listener = object : Player.Listener {
+            override fun onPlaybackStateChanged(state: Int) {
+                isLoading = state == Player.STATE_BUFFERING
+                if (state == Player.STATE_READY) {
+                    duration = exoPlayer.duration
+                    isPlayingAudio = true
                 }
-            })
+            }
+
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                isPlayingAudio = isPlaying
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun onPositionDiscontinuity(reason: Int) {
+                currentTime = exoPlayer.currentPosition
+            }
         }
-    }
-    DisposableEffect(Unit){
+        exoPlayer.addListener(listener)
+
         onDispose {
-            player.release()
+            exoPlayer.removeListener(listener)
+            exoPlayer.release()
         }
     }
 
@@ -275,7 +284,7 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
         } else {
             Slider(
                 value = currentTime.toFloat(),
-                onValueChange = { player.seekTo(it.toLong()) },
+                onValueChange = { exoPlayer.seekTo(it.toLong()) },
                 valueRange = 0f..duration.toFloat(),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -288,7 +297,7 @@ fun ExoPlayerAudioPlayer(audioURL: String) {
             }
 
             IconButton(onClick = {
-                if (isPlayingAudio) player.pause() else player.play()
+                if (isPlayingAudio) exoPlayer.pause() else exoPlayer.play()
             }) {
                 Icon(
                     imageVector = if (isPlayingAudio) Icons.Default.Pause else Icons.Default.PlayArrow,
