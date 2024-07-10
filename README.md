@@ -48,7 +48,7 @@ implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.0.0")
 ## Usage
 
 ### YouTube Video Player
-For the YouTube Player, you just need to provide the youtube video link. It will automatically detect it & will launch the YouTube Player.
+For the YouTube Player, you just need to provide the youtube video link. It will automatically detect it & will launch the YouTube Player. 
 ```groovy
 import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
@@ -73,13 +73,15 @@ fun main() {
 ```
 
 ## Audio Player Support
+Audio Player Support is Implemented. It supports `mp3` `wav` `aac` `ogg` `m4a`. It Supports Play Back, Volume Up, Down and Stability as well. 
 ```groovy
 import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 
 fun main() {
-   VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
-               url ="https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
-     )
+    MediaPlayer(
+        modifier = Modifier.fillMaxWidth(),
+        url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Sevish_-__nbsp_.mp3"
+    )
 }
 ```
 
