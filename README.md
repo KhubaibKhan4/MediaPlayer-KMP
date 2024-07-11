@@ -23,6 +23,7 @@ MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to displ
 - **Platform Agnostic:** Supports Android, iOS, Web, and Desktop platforms through Kotlin Multiplatform.
 - **Compose Multiplatform Integration:** Seamlessly integrates with JetBrains Compose Multiplatform UI framework.
 - **YouTube Video Playback:** Easily load and play YouTube videos with minimal setup.
+- **Audio Player Playback:** Easily load and play Audios with minimal setup.
 - **Event Handling:** Provides callbacks and event listeners for video playback actions and events.
 
 ## Installation
