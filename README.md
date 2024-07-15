@@ -13,6 +13,7 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-JVM-red.svg)
 <img src="https://img.shields.io/liberapay/patrons/KhubaibKhanDev.svg?logo=liberapay">
 
+![Untitledvideo-MadewithClipchamp57-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/37a34a60-e5ad-48c5-9e4e-7a974cd40c62)
 
 ## Overview
 
