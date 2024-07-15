@@ -29,7 +29,7 @@ MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to displ
 
 ## Installation
 
-You can include Alert-KMP in your project by adding the following dependency:
+You can include MediaPlayer-KMP in your project by adding the following dependency:
 
 **Version Catelog**
 ```
