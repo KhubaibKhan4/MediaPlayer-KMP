@@ -51,7 +51,7 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     - name: Gradle publish
-      uses: gradle/gradle-build-action@ce999babab2de1c4b649dc15f0ee67e6246c994f
+      uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1
       with:
         arguments: |
           ${{ matrix.target }}
