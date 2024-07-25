@@ -95,6 +95,7 @@ fun main() {
 
 ## Future Plans 
 - Uri Content Setup with Player.
+- Playback Support.
 
 
 ## 🤝 Connect with Me
