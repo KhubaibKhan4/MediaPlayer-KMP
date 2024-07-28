@@ -27,6 +27,12 @@ MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to displ
 - **Audio Player Playback:** Easily load and play Audios with minimal setup.
 - **Event Handling:** Provides callbacks and event listeners for video playback actions and events.
 
+## Future Plans 
+- **Media Player Sessions Support**.
+- **Desktop Playback Support**.
+- **Audio player Customisation Support**.
+
+
 ## Installation
 
 You can include MediaPlayer-KMP in your project by adding the following dependency:
