@@ -142,3 +142,9 @@ mavenPublishing {
 }
 
 task("testClasses") {}
+tasks.withType<JavaExec> {
+    jvmArgs = listOf(
+        "--module-path", "path/to/javafx-sdk/lib",
+        "--add-modules", "javafx.controls,javafx.fxml,javafx.media"
+    )
+}
