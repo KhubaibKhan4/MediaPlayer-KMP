@@ -56,9 +56,12 @@ kotlin {
                 implementation(libs.androidx.activityCompose)
                 implementation(libs.compose.uitooling)
                 implementation(compose.ui)
-                implementation("androidx.media3:media3-exoplayer:1.3.1")
-                implementation("androidx.media3:media3-exoplayer-dash:1.3.1")
-                implementation("androidx.media3:media3-ui:1.3.1")
+                implementation("androidx.media3:media3-exoplayer:1.4.0")
+                implementation("androidx.media3:media3-exoplayer-dash:1.4.0")
+                implementation("androidx.media3:media3-ui:1.4.0")
+                implementation("androidx.media3:media3-session:1.4.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
                 implementation(libs.kotlinx.coroutines.android)
             }
         }
@@ -102,7 +105,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.0.8"
+        version = "1.0.9"
     )
 
     // Configure POM metadata for the published artifact
@@ -142,9 +145,3 @@ mavenPublishing {
 }
 
 task("testClasses") {}
-tasks.withType<JavaExec> {
-    jvmArgs = listOf(
-        "--module-path", "path/to/javafx-sdk/lib",
-        "--add-modules", "javafx.controls,javafx.fxml,javafx.media"
-    )
-}
