@@ -20,15 +20,21 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
-        publishLibraryVariants("release", "debug")
     }
     js {
         browser()
         binaries.executable()
     }
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
 
 
     sourceSets {
@@ -105,10 +111,9 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.0.9"
+        version = "1.0.1"
     )
 
-    // Configure POM metadata for the published artifact
     pom {
         name.set("MediaPlayer-KMP")
         description.set("Compose & Kotlin Multiplatform Library that Help You to Play Videos/ YouTube Videos Native Notifications on Android, iOS, Web & Desktop.")
@@ -117,12 +122,11 @@ mavenPublishing {
 
         licenses {
             license {
-                name.set("MIT")
-                url.set("https://opensource.org/licenses/MIT")
+                name.set("GPL-2.0")
+                url.set("https://opensource.org/license/gpl-2-0")
             }
         }
 
-        // Specify developers information
         developers {
             developer {
                 id.set("khubaibkhan4")
@@ -131,17 +135,17 @@ mavenPublishing {
             }
         }
 
-        // Specify SCM information
         scm {
             url.set("https://github.com/KhubaibKhan4/MediaPlayer-KMP")
         }
     }
 
-    // Configure publishing to Maven Central
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 
-    // Enable GPG signing for all publications
     signAllPublications()
 }
 
 task("testClasses") {}
+tasks.withType<JavaExec> {
+    jvmArgs = listOf("--add-modules", "javafx.controls,javafx.fxml", "--add-opens", "javafx.graphics/javafx.scene=ALL-UNNAMED", "--add-opens", "javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED", "--add-opens", "javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED")
+}

@@ -18,9 +18,10 @@ publishing {
 
         // Provide artifacts information required by Maven Central
         pom {
-            name.set("Kotlin Multiplatform library template")
-            description.set("Dummy library to test deployment to Maven Central")
-            url.set("https://github.com/Kotlin/multiplatform-library-template")
+            name.set("MediaPlayer-KMP")
+            description.set("Compose & Kotlin Multiplatform Library that Help You to Play Videos/ YouTube Videos Native Notifications on Android, iOS, Web & Desktop.")
+            inceptionYear.set("2024")
+            url.set("https://github.com/KhubaibKhan4/MediaPlayer-KMP")
 
             licenses {
                 license {
@@ -28,16 +29,19 @@ publishing {
                     url.set("https://opensource.org/licenses/MIT")
                 }
             }
+
+            // Specify developers information
             developers {
                 developer {
-                    id.set("JetBrains")
-                    name.set("JetBrains Team")
-                    organization.set("JetBrains")
-                    organizationUrl.set("https://www.jetbrains.com")
+                    id.set("khubaibkhan4")
+                    name.set("Muhammad Khubaib Imtiaz")
+                    email.set("18.bscs.803@gmail.com")
                 }
             }
+
+            // Specify SCM information
             scm {
-                url.set("https://github.com/Kotlin/multiplatform-library-template")
+                url.set("https://github.com/KhubaibKhan4/MediaPlayer-KMP")
             }
         }
     }

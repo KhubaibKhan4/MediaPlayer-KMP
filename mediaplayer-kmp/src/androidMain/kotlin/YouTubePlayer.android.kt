@@ -1,4 +1,7 @@
+import android.content.pm.ActivityInfo
 import android.os.Build
+import android.view.View
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -44,6 +48,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.FullscreenListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlinx.coroutines.CoroutineScope
@@ -136,9 +142,12 @@ fun YoutubeVideoPlayer(
 ) {
     val mContext = LocalContext.current
     val mLifeCycleOwner = LocalLifecycleOwner.current
+    val activity = mContext as ComponentActivity
     val videoId = extractVideoId(youtubeURL)
     var player: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer? = null
     val playerFragment = YouTubePlayerView(mContext)
+    var isFullScreen by remember { mutableStateOf(false) }
+
     val playerStateListener = object : AbstractYouTubePlayerListener() {
         override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
             super.onReady(youTubePlayer)
@@ -180,32 +189,59 @@ fun YoutubeVideoPlayer(
             println("iFramePlayer Error Reason = $error")
         }
     }
+
+    val fullScreenListener = object : FullscreenListener {
+
+        override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {
+            isFullScreen = true
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+            activity.window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+            activity.window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
+
+        override fun onExitFullscreen() {
+            isFullScreen = false
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+            activity.window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_VISIBLE
+        }
+    }
+
     val playerBuilder = IFramePlayerOptions.Builder().apply {
         controls(1)
-        fullscreen(0)
+        fullscreen(1)
         autoplay(1)
         modestBranding(1)
         ccLoadPolicy(1)
         rel(0)
     }
+
     AndroidView(
-        modifier = modifier.background(Color.DarkGray),
+        modifier = modifier
+            .background(Color.DarkGray)
+            .fillMaxSize(),
         factory = {
             playerFragment.apply {
                 enableAutomaticInitialization = false
                 initialize(playerStateListener, playerBuilder.build())
+                addFullscreenListener(fullScreenListener)
             }
         }
     )
+
     DisposableEffect(key1 = Unit, effect = {
-        val activity = (mContext as? ComponentActivity)
-        activity ?: return@DisposableEffect onDispose {}
         onDispose {
             playerFragment.removeYouTubePlayerListener(playerStateListener)
+            playerFragment.removeFullscreenListener(fullScreenListener)
             playerFragment.release()
             player = null
         }
     })
+
     DisposableEffect(mLifeCycleOwner) {
         val lifecycle = mLifeCycleOwner.lifecycle
         val observer = LifecycleEventObserver { _, event ->

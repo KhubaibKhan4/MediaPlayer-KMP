@@ -90,7 +90,9 @@ fun HTMLVideoPlayer(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         HtmlView(
-            modifier = Modifier.fillMaxWidth().height(300.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp),
             factory = {
                 val iframe = createElement("iframe")
                 iframe.setAttribute("width", "100%")
@@ -102,7 +104,7 @@ fun HTMLVideoPlayer(
                 iframe.setAttribute("frameborder", "0")
                 iframe.setAttribute(
                     "allow",
-                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" // Allow fullscreen
                 )
                 iframe.setAttribute("allowfullscreen", "true")
                 iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade")
