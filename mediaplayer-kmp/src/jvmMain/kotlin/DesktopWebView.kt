@@ -28,7 +28,14 @@ fun DesktopWebView(
         modifier = modifier,
     )
 
-    DisposableEffect(url) { onDispose { jPanel.remove(jfxPanel) } }
+    DisposableEffect(url) {
+        onDispose {
+            Platform.runLater {
+                (jfxPanel.scene?.root as? WebView)?.engine?.load("")
+            }
+            jPanel.remove(jfxPanel)
+        }
+    }
 }
 
 private fun JFXPanel.buildWebView(url: String, onLoadingChange: (Boolean) -> Unit) {
