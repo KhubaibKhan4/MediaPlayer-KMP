@@ -25,16 +25,9 @@ kotlin {
         browser()
         binaries.executable()
     }
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
 
 
     sourceSets {
@@ -111,7 +104,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.1.0"
+        version = "1.1.1"
     )
 
     pom {
