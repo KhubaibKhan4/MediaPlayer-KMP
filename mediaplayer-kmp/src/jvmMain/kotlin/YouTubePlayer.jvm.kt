@@ -89,6 +89,18 @@ actual fun MediaPlayer(
                 sliderIndicatorColor
             )
         }
+        else ->{
+            DesktopAudioPlayer(
+                modifier,
+                audioURL = url,
+                startTime,
+                endTime,
+                volumeIconColor,
+                playIconColor,
+                sliderTrackColor,
+                sliderIndicatorColor
+            )
+        }
     }
 }
 

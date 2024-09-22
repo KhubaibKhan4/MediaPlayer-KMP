@@ -1,6 +1,10 @@
+import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.view.ActionProvider
 import android.view.View
+import android.view.WindowInsets
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
@@ -37,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -45,17 +50,18 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerControlView
 import androidx.media3.ui.PlayerView
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.FullscreenListener
-import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.YouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.options.IFramePlayerOptions
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.jetbrains.kotlinx.multiplatform.library.template.R
 
 @RequiresApi(Build.VERSION_CODES.S)
 @Composable
@@ -82,10 +88,10 @@ actual fun VideoPlayer(
 @Composable
 fun ExoPlayerVideoPlayer(videoURL: String) {
     val context = LocalContext.current
-    val exoPlayer = remember {
-        ExoPlayer.Builder(context).build()
-    }
+    val activity = context as ComponentActivity
+    val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     var isLoading by remember { mutableStateOf(true) }
+    var isFullScreen by remember { mutableStateOf(false) }
 
     DisposableEffect(exoPlayer) {
         val mediaItem = MediaItem.fromUri(videoURL)
@@ -109,15 +115,65 @@ fun ExoPlayerVideoPlayer(videoURL: String) {
             factory = {
                 PlayerView(context).apply {
                     player = exoPlayer
+                    useController = true
+                    setControllerVisibilityListener(object : PlayerView.ControllerVisibilityListener {
+                        @SuppressLint("ResourceType")
+                        override fun onVisibilityChanged(visibility: Int) {
+                            if (visibility == View.VISIBLE) {
+                                findViewById<View>(R.drawable.baseline_fullscreen_24)?.setOnClickListener {
+                                    isFullScreen = !isFullScreen
+                                    handleFullScreen(activity, isFullScreen)
+                                }
+                            }
+                        }
+                    })
                 }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            update = { view ->
+                view.player = exoPlayer
+            },
+            onReset = { view ->
+                view.clearFocus()
+            }
         )
 
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center)
             )
+        }
+    }
+}
+
+fun handleFullScreen(activity: ComponentActivity, isFullScreen: Boolean) {
+    if (isFullScreen) {
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowInsetsController = activity.window.insetsController
+            windowInsetsController?.apply {
+                hide(WindowInsets.Type.systemBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            activity.window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_FULLSCREEN
+        }
+    } else {
+        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val windowInsetsController = activity.window.insetsController
+            windowInsetsController?.apply {
+                show(WindowInsets.Type.systemBars())
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         }
     }
 }
@@ -131,7 +187,6 @@ fun isVideoFile(url: String?): Boolean {
     ) == true
 }
 
-@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 fun YoutubeVideoPlayer(
     modifier: Modifier = Modifier,
@@ -144,6 +199,7 @@ fun YoutubeVideoPlayer(
     val mLifeCycleOwner = LocalLifecycleOwner.current
     val activity = mContext as ComponentActivity
     val videoId = extractVideoId(youtubeURL)
+    val startTimeInSeconds = extractStartTime(youtubeURL)
     var player: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer? = null
     val playerFragment = YouTubePlayerView(mContext)
     var isFullScreen by remember { mutableStateOf(false) }
@@ -152,7 +208,7 @@ fun YoutubeVideoPlayer(
         override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
             super.onReady(youTubePlayer)
             player = youTubePlayer
-            youTubePlayer.loadVideo(videoId!!, 0f)
+            youTubePlayer.loadVideo(videoId!!, startTimeInSeconds)
         }
 
         override fun onStateChange(
@@ -195,19 +251,35 @@ fun YoutubeVideoPlayer(
         override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {
             isFullScreen = true
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-            activity.window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-            activity.window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                        View.SYSTEM_UI_FLAG_FULLSCREEN
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val windowInsetsController = activity.window?.insetsController
+                windowInsetsController?.apply {
+                    hide(WindowInsets.Type.systemBars())
+                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                activity.window.decorView.systemUiVisibility =
+                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                            View.SYSTEM_UI_FLAG_FULLSCREEN
+            }
         }
 
         override fun onExitFullscreen() {
             isFullScreen = false
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-            activity.window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_VISIBLE
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val windowInsetsController = activity.window?.insetsController
+                windowInsetsController?.apply {
+                    show(WindowInsets.Type.systemBars())
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            }
         }
     }
 
@@ -265,6 +337,18 @@ fun YoutubeVideoPlayer(
         }
     }
 }
+fun extractStartTime(url: String?): Float {
+    url?.let {
+        val regex = Regex(".*[?&]t=(\\d+)")
+        val matchResult = regex.find(it)
+        if (matchResult != null) {
+            val timeInSeconds = matchResult.groupValues[1].toFloat()
+            return timeInSeconds
+        }
+    }
+    return 0f
+}
+
 
 fun extractVideoId(url: String?): String? {
     return url?.let {
@@ -407,15 +491,10 @@ fun formatTime(ms: Long): String {
     }
 }
 
-fun isAudioFile(url: String?): Boolean {
-    return url?.matches(
-        Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)
-    ) == true
-}
-
 @Composable
 actual fun MediaPlayer(
-    modifier: Modifier, url: String,
+    modifier: Modifier,
+    url: String,
     startTime: Color,
     endTime: Color,
     volumeIconColor: Color,
@@ -423,17 +502,23 @@ actual fun MediaPlayer(
     sliderTrackColor: Color,
     sliderIndicatorColor: Color
 ) {
-    when {
-        isAudioFile(url) -> {
-            ExoPlayerAudioPlayer(
-                audioURL = url,
-                startTime,
-                endTime,
-                volumeIconColor,
-                playIconColor,
-                sliderTrackColor,
-                sliderIndicatorColor
-            )
-        }
+    if (isAudioFile(url)) {
+        ExoPlayerAudioPlayer(
+            audioURL = url,
+            startTime = startTime,
+            endTime = endTime,
+            volumeIconColor = volumeIconColor,
+            playIconColor = playIconColor,
+            sliderTrackColor = sliderTrackColor,
+            sliderIndicatorColor = sliderIndicatorColor
+        )
+    } else {
+        ExoPlayerVideoPlayer(videoURL = url)
     }
+}
+
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(
+        Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)
+    ) == true
 }
