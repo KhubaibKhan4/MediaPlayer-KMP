@@ -1,7 +1,6 @@
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import utils.Constant.NoThumbnail
 
 @Composable
 expect fun VideoPlayer(modifier: Modifier, url: String)

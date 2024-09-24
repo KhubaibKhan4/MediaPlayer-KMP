@@ -253,8 +253,7 @@ fun YoutubeVideoPlayer(
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val windowInsetsController = activity.window?.insetsController
-                windowInsetsController?.apply {
+                activity.window.insetsController?.apply {
                     hide(WindowInsets.Type.systemBars())
                     systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
@@ -269,11 +268,10 @@ fun YoutubeVideoPlayer(
 
         override fun onExitFullscreen() {
             isFullScreen = false
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                val windowInsetsController = activity.window?.insetsController
-                windowInsetsController?.apply {
+                activity.window.insetsController?.apply {
                     show(WindowInsets.Type.systemBars())
                 }
             } else {
