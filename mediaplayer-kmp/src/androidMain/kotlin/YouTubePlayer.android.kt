@@ -247,7 +247,6 @@ fun YoutubeVideoPlayer(
     }
 
     val fullScreenListener = object : FullscreenListener {
-
         override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {
             isFullScreen = true
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
@@ -264,6 +263,8 @@ fun YoutubeVideoPlayer(
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
                             View.SYSTEM_UI_FLAG_FULLSCREEN
             }
+
+            player?.play()
         }
 
         override fun onExitFullscreen() {
@@ -278,6 +279,8 @@ fun YoutubeVideoPlayer(
                 @Suppress("DEPRECATION")
                 activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
             }
+
+            player?.play()
         }
     }
 

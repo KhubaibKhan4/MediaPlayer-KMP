@@ -104,7 +104,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.1.3"
+        version = "1.1.4"
     )
 
     pom {
