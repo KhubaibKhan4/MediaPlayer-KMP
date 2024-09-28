@@ -269,7 +269,7 @@ fun YoutubeVideoPlayer(
 
         override fun onExitFullscreen() {
             isFullScreen = false
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 activity.window.insetsController?.apply {
