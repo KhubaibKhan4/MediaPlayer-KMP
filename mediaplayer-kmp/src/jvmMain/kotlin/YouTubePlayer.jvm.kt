@@ -18,9 +18,7 @@ actual fun VideoPlayer(
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
             val videoId = splitLinkForVideoId(url)
-            DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId") {
-
-            }
+            DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId")
         }
 
         isVideoFile(url) -> {
@@ -39,11 +37,7 @@ fun DesktopVideoPlayer(
 ) {
     Box(modifier = modifier) {
         var isLoading by remember { mutableStateOf(true) }
-
-        DesktopWebView(modifier, videoURL) {
-            isLoading = it
-            println("Loading Video: $it")
-        }
+        DesktopWebView(modifier, videoURL)
 
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))

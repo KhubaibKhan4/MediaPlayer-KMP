@@ -3,6 +3,7 @@ import android.content.pm.ActivityInfo
 import android.os.Build
 import android.view.ActionProvider
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
@@ -246,22 +247,34 @@ fun YoutubeVideoPlayer(
         }
     }
 
+    var fullscreenView: View? by remember { mutableStateOf(null) }
+
     val fullScreenListener = object : FullscreenListener {
-        override fun onEnterFullscreen(fullscreenView: View, exitFullscreen: () -> Unit) {
+        override fun onEnterFullscreen(view: View, exitFullscreen: () -> Unit) {
             isFullScreen = true
+            fullscreenView = view
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                activity.window.setDecorFitsSystemWindows(false)
                 activity.window.insetsController?.apply {
                     hide(WindowInsets.Type.systemBars())
                     systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
                 }
             } else {
                 @Suppress("DEPRECATION")
+                activity.window.setFlags(
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+                )
                 activity.window.decorView.systemUiVisibility =
                     View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                             View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
                             View.SYSTEM_UI_FLAG_FULLSCREEN
+            }
+
+            (activity.window.decorView as ViewGroup).apply {
+                addView(view)
             }
 
             player?.play()
@@ -272,12 +285,20 @@ fun YoutubeVideoPlayer(
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                activity.window.setDecorFitsSystemWindows(true)
                 activity.window.insetsController?.apply {
                     show(WindowInsets.Type.systemBars())
                 }
             } else {
                 @Suppress("DEPRECATION")
+                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+            }
+
+            fullscreenView?.let { view ->
+                (activity.window.decorView as ViewGroup).apply {
+                    removeView(view)
+                }
             }
 
             player?.play()
@@ -294,9 +315,13 @@ fun YoutubeVideoPlayer(
     }
 
     AndroidView(
-        modifier = modifier
-            .background(Color.DarkGray)
-            .fillMaxSize(),
+        modifier = if (isFullScreen) {
+            Modifier.fillMaxSize()
+        } else {
+            Modifier
+                .background(Color.DarkGray)
+                .fillMaxSize()
+        },
         factory = {
             playerFragment.apply {
                 enableAutomaticInitialization = false
