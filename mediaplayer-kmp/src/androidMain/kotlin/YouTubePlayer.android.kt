@@ -1,12 +1,12 @@
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Build
-import android.view.ActionProvider
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -51,7 +50,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.ui.PlayerControlView
 import androidx.media3.ui.PlayerView
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -204,6 +202,8 @@ fun YoutubeVideoPlayer(
     var player: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer? = null
     val playerFragment = YouTubePlayerView(mContext)
     var isFullScreen by remember { mutableStateOf(false) }
+    val fullscreenViewContainer = mContext.findViewById<FrameLayout>(R.id.full_screen_view_container)
+
 
     val playerStateListener = object : AbstractYouTubePlayerListener() {
         override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
@@ -253,6 +253,9 @@ fun YoutubeVideoPlayer(
         override fun onEnterFullscreen(view: View, exitFullscreen: () -> Unit) {
             isFullScreen = true
             fullscreenView = view
+            playerFragment.visibility = View.GONE
+            fullscreenViewContainer.visibility = View.VISIBLE
+            fullscreenViewContainer.addView(view)
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -283,6 +286,10 @@ fun YoutubeVideoPlayer(
         override fun onExitFullscreen() {
             isFullScreen = false
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+
+            playerFragment.visibility = View.VISIBLE
+            fullscreenViewContainer.visibility = View.GONE
+            fullscreenViewContainer.removeAllViews()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 activity.window.setDecorFitsSystemWindows(true)
