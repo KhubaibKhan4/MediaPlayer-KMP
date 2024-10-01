@@ -62,7 +62,6 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
                 implementation(libs.kotlinx.coroutines.android)
-                implementation("com.android.support.constraint:constraint-layout:2.0.4")
             }
         }
         val jvmMain by getting {
@@ -105,7 +104,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.1.6"
+        version = "1.1.7"
     )
 
     pom {

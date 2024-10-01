@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowInsetsController
 import android.view.WindowManager
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
@@ -202,7 +201,6 @@ fun YoutubeVideoPlayer(
     var player: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer? = null
     val playerFragment = YouTubePlayerView(mContext)
     var isFullScreen by remember { mutableStateOf(false) }
-    val fullscreenViewContainer = mContext.findViewById<FrameLayout>(R.id.full_screen_view_container)
 
 
     val playerStateListener = object : AbstractYouTubePlayerListener() {
@@ -254,8 +252,6 @@ fun YoutubeVideoPlayer(
             isFullScreen = true
             fullscreenView = view
             playerFragment.visibility = View.GONE
-            fullscreenViewContainer.visibility = View.VISIBLE
-            fullscreenViewContainer.addView(view)
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -288,8 +284,6 @@ fun YoutubeVideoPlayer(
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
             playerFragment.visibility = View.VISIBLE
-            fullscreenViewContainer.visibility = View.GONE
-            fullscreenViewContainer.removeAllViews()
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 activity.window.setDecorFitsSystemWindows(true)
