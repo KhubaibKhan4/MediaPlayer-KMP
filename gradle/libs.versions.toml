@@ -1,5 +1,5 @@
 [versions]
-agp = "8.2.2"
+agp = "8.7.0"
 kotlin = "2.0.0"
 nexus-publish = "2.0.0-rc-1"
 android-minSdk = "24"
