@@ -55,12 +55,12 @@ kotlin {
                 implementation(libs.androidx.activityCompose)
                 implementation(libs.compose.uitooling)
                 implementation(compose.ui)
-                implementation("androidx.media3:media3-exoplayer:1.4.0")
-                implementation("androidx.media3:media3-exoplayer-dash:1.4.0")
-                implementation("androidx.media3:media3-ui:1.4.0")
-                implementation("androidx.media3:media3-session:1.4.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
+                implementation(libs.androidx.media3.exoplayer.v141)
+                implementation(libs.androidx.media3.exoplayer.dash.v141)
+                implementation(libs.androidx.media3.ui)
+                implementation(libs.androidx.media3.session)
+                implementation(libs.jetbrains.kotlinx.serialization.json)
+                implementation(libs.kotlinx.serialization.core)
                 implementation(libs.kotlinx.coroutines.android)
             }
         }
@@ -104,7 +104,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "1.1.7"
+        version = "1.1.8"
     )
 
     pom {
