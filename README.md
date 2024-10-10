@@ -41,7 +41,7 @@ You can include MediaPlayer-KMP in your project by adding the following dependen
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "1.1.7"
+mediaPlayerKMP = "1.1.8"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -50,7 +50,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.1.7")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:1.1.8")
 ```
 
 
