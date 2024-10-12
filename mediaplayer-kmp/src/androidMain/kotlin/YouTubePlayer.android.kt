@@ -1,6 +1,8 @@
 import android.annotation.SuppressLint
 import android.content.pm.ActivityInfo
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
@@ -202,7 +204,6 @@ fun YoutubeVideoPlayer(
     val playerFragment = YouTubePlayerView(mContext)
     var isFullScreen by remember { mutableStateOf(false) }
 
-
     val playerStateListener = object : AbstractYouTubePlayerListener() {
         override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
             super.onReady(youTubePlayer)
@@ -214,34 +215,22 @@ fun YoutubeVideoPlayer(
             youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer,
             state: PlayerConstants.PlayerState,
         ) {
-            super.onStateChange(youTubePlayer, state)
             when (state) {
                 PlayerConstants.PlayerState.BUFFERING -> {
                     isLoading.invoke(true)
                     isPlaying.invoke(false)
                 }
-
                 PlayerConstants.PlayerState.PLAYING -> {
                     isLoading.invoke(false)
                     isPlaying.invoke(true)
                 }
-
                 PlayerConstants.PlayerState.ENDED -> {
                     isPlaying.invoke(false)
                     isLoading.invoke(false)
                     onVideoEnded.invoke()
                 }
-
                 else -> {}
             }
-        }
-
-        override fun onError(
-            youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer,
-            error: PlayerConstants.PlayerError,
-        ) {
-            super.onError(youTubePlayer, error)
-            println("iFramePlayer Error Reason = $error")
         }
     }
 
@@ -252,31 +241,34 @@ fun YoutubeVideoPlayer(
             isFullScreen = true
             fullscreenView = view
             playerFragment.visibility = View.GONE
+
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                activity.window.setDecorFitsSystemWindows(false)
-                activity.window.insetsController?.apply {
-                    hide(WindowInsets.Type.systemBars())
-                    systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            Handler(Looper.getMainLooper()).post {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    activity.window.setDecorFitsSystemWindows(false)
+                    activity.window.insetsController?.apply {
+                        hide(WindowInsets.Type.systemBars())
+                        systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    activity.window.setFlags(
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN
+                    )
+                    activity.window.decorView.systemUiVisibility =
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                                View.SYSTEM_UI_FLAG_FULLSCREEN
                 }
-            } else {
-                @Suppress("DEPRECATION")
-                activity.window.setFlags(
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-                )
-                activity.window.decorView.systemUiVisibility =
-                    View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                            View.SYSTEM_UI_FLAG_FULLSCREEN
+
+                (activity.window.decorView as ViewGroup).apply {
+                    addView(view)
+                }
             }
 
-            (activity.window.decorView as ViewGroup).apply {
-                addView(view)
-            }
-
-            player?.play()
+            player?.play() // Start playing video after UI updates
         }
 
         override fun onExitFullscreen() {
@@ -285,24 +277,26 @@ fun YoutubeVideoPlayer(
 
             playerFragment.visibility = View.VISIBLE
 
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                activity.window.setDecorFitsSystemWindows(true)
-                activity.window.insetsController?.apply {
-                    show(WindowInsets.Type.systemBars())
+            Handler(Looper.getMainLooper()).post {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    activity.window.setDecorFitsSystemWindows(true)
+                    activity.window.insetsController?.apply {
+                        show(WindowInsets.Type.systemBars())
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                    activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
                 }
-            } else {
-                @Suppress("DEPRECATION")
-                activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
+
+                fullscreenView?.let { view ->
+                    (activity.window.decorView as ViewGroup).apply {
+                        removeView(view)
+                    }
+                }
             }
 
-            fullscreenView?.let { view ->
-                (activity.window.decorView as ViewGroup).apply {
-                    removeView(view)
-                }
-            }
-
-            player?.play()
+            player?.play() // Resume playing video after UI changes
         }
     }
 
@@ -345,17 +339,9 @@ fun YoutubeVideoPlayer(
         val lifecycle = mLifeCycleOwner.lifecycle
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_RESUME -> {
-                    player?.play()
-                }
-
-                Lifecycle.Event.ON_PAUSE -> {
-                    player?.pause()
-                }
-
-                else -> {
-                    //
-                }
+                Lifecycle.Event.ON_RESUME -> player?.play()
+                Lifecycle.Event.ON_PAUSE -> player?.pause()
+                else -> {}
             }
         }
         lifecycle.addObserver(observer)
