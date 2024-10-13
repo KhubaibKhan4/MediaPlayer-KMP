@@ -8,6 +8,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import kotlinx.browser.document
+import org.w3c.dom.HTMLElement
 
 @Composable
 actual fun VideoPlayer(
@@ -17,9 +19,7 @@ actual fun VideoPlayer(
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
             val videoId = extractVideoId(url)
-            HTMLVideoPlayer(modifier, videoId) {
-
-            }
+            HTMLVideoPlayer(videoId,modifier)
         }
 
         isVideoFile(url) -> {
@@ -78,45 +78,6 @@ fun isAudioFile(url: String?): Boolean {
     return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
 }
 
-@Composable
-fun HTMLVideoPlayer(
-    modifier: Modifier,
-    videoId: String,
-    onLoadingChange: (Boolean) -> Unit,
-) {
-    Column(
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        HtmlView(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp),
-            factory = {
-                val iframe = createElement("iframe")
-                iframe.setAttribute("width", "100%")
-                iframe.setAttribute("height", "100%")
-                iframe.setAttribute(
-                    "src",
-                    "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1&showinfo=0"
-                )
-                iframe.setAttribute("frameborder", "0")
-                iframe.setAttribute(
-                    "allow",
-                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" // Allow fullscreen
-                )
-                iframe.setAttribute("allowfullscreen", "true")
-                iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade")
-                iframe.addEventListener("load", {
-                    onLoadingChange(false)
-                })
-                iframe
-            }
-        )
-    }
-}
-
 private fun extractVideoId(url: String): String {
     val videoIdRegex =
         Regex("""(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})""")
@@ -148,4 +109,62 @@ actual fun MediaPlayer(
             HTMLAudioPlayer(modifier, audioURL = url)
         }
     }
+}
+
+@Composable
+fun HTMLVideoPlayer(
+    videoId: String,
+    modifier: Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        HtmlView(
+            modifier = modifier.fillMaxWidth(),
+            factory = {
+                val iframe = createElement("iframe") as HTMLElement
+                iframe.setAttribute("width", "100%")
+                iframe.setAttribute("height", "100%")
+                iframe.setAttribute(
+                    "src",
+                    "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1&showinfo=0"
+                )
+                iframe.setAttribute("frameborder", "0")
+                iframe.setAttribute(
+                    "allow",
+                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                )
+                iframe.setAttribute("allowfullscreen", "true")
+                iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade")
+
+                val script = """
+                    setTimeout(function() {
+                        var overlaySelectors = [
+                            '.ytp-gradient-top',
+                            '.ytp-gradient-bottom'
+                        ];
+                        overlaySelectors.forEach(function(selector) {
+                            var element = document.querySelector(selector);
+                            if (element !== null) {
+                                element.style.display = 'none';
+                            }
+                        });
+                    }, 1000);
+                """.trimIndent()
+                injectJavaScript(iframe, script)
+                iframe
+            },
+            update = {
+                it.setAttribute("width", "100%")
+                it.setAttribute("height", "100%")
+            }
+        )
+    }
+}
+private fun injectJavaScript(iframe: HTMLElement, script: String) {
+    val scriptElement = document.createElement("script") as HTMLElement
+    scriptElement.textContent = script
+    iframe.appendChild(scriptElement)
 }

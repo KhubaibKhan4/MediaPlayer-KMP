@@ -7,34 +7,120 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshots.SnapshotStateObserver
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusTarget
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.round
 import kotlinx.browser.document
 import org.w3c.dom.Document
 import org.w3c.dom.Element
 
 
-val LocalLayerContainer = staticCompositionLocalOf<Element> {
-    error("CompositionLocal LayerContainer not provided")
+val NoOpUpdate: Element.() -> Unit = {}
+
+private class ComponentInfo<T : Element> {
+    lateinit var container: Element
+    lateinit var component: T
+    lateinit var updater: Updater<T>
 }
 
-@Composable
-fun ProvideLayerContainer(content: @Composable () -> Unit) {
-    val rootElement = remember { document.createElement("div") }
 
-    DisposableEffect(Unit) {
-        document.body?.appendChild(rootElement)
-        onDispose {
-            document.body?.removeChild(rootElement)
+private class FocusSwitcher<T : Element>(
+    private val info: ComponentInfo<T>,
+    private val focusManager: FocusManager
+) {
+    private val backwardRequester = FocusRequester()
+    private val forwardRequester = FocusRequester()
+    private var isRequesting = false
+
+    fun moveBackward() {
+        try {
+            isRequesting = true
+            backwardRequester.requestFocus()
+        } finally {
+            isRequesting = false
         }
+        focusManager.moveFocus(FocusDirection.Previous)
     }
 
-    CompositionLocalProvider(LocalLayerContainer provides rootElement) {
-        content()
+    fun moveForward() {
+        try {
+            isRequesting = true
+            forwardRequester.requestFocus()
+        } finally {
+            isRequesting = false
+        }
+        focusManager.moveFocus(FocusDirection.Next)
+    }
+
+    @Composable
+    fun Content() {
+        Box(
+            Modifier
+                .focusRequester(backwardRequester)
+                .onFocusChanged {
+                    if (it.isFocused && !isRequesting) {
+                        focusManager.clearFocus(force = true)
+                        val component = info.container.firstElementChild
+                        if(component != null) {
+                            requestFocus(component)
+                        }else {
+                            moveForward()
+                        }
+                    }
+                }
+                .focusTarget()
+        )
+        Box(
+            Modifier
+                .focusRequester(forwardRequester)
+                .onFocusChanged {
+                    if (it.isFocused && !isRequesting) {
+                        focusManager.clearFocus(force = true)
+
+                        val component = info.container.lastElementChild
+                        if(component != null) {
+                            requestFocus(component)
+                        }else {
+                            moveBackward()
+                        }
+                    }
+                }
+                .focusTarget()
+        )
     }
 }
+
+private fun requestFocus(element: Element) : Unit = js("""
+    {
+        element.focus();
+    }
+""")
+
+private fun initializingElement(element: Element) : Unit = js("""
+    {
+        element.style.position = 'absolute';
+        element.style.margin = '0px';
+    }
+""")
+
+private fun changeCoordinates(element: Element,width: Float,height: Float,x: Float,y: Float) : Unit = js("""
+    {
+        element.style.width = width + 'px';
+        element.style.height = height + 'px';
+        element.style.left = x + 'px';
+        element.style.top = y + 'px';
+    }
+""")
+
+
 
 @Composable
 fun <T : Element> HtmlView(
@@ -45,6 +131,8 @@ fun <T : Element> HtmlView(
     val componentInfo = remember { ComponentInfo<T>() }
     val root = LocalLayerContainer.current
     val density = LocalDensity.current.density
+    val focusManager = LocalFocusManager.current
+    val focusSwitcher = remember { FocusSwitcher(componentInfo, focusManager) }
 
     Box(
         modifier = modifier.onGloballyPositioned { coordinates ->
@@ -58,13 +146,15 @@ fun <T : Element> HtmlView(
                 location.y / density
             )
         }
-    )
+    ) {
+        focusSwitcher.Content()
+    }
 
     DisposableEffect(factory) {
         componentInfo.container = document.createElement("div")
         componentInfo.component = document.factory()
-        root.appendChild(componentInfo.container)
-        componentInfo.container.appendChild(componentInfo.component)
+        root.insertBefore(componentInfo.container, root.firstChild)
+        componentInfo.container.append(componentInfo.component)
         componentInfo.updater = Updater(componentInfo.component, update)
         initializingElement(componentInfo.component)
         onDispose {
@@ -78,50 +168,19 @@ fun <T : Element> HtmlView(
     }
 }
 
-private fun initializingElement(element: Element): Unit = js(
-    """
-    {
-        element.style.position = 'absolute';
-        element.style.margin = '0px';
-    }
-"""
-)
-
-private fun changeCoordinates(
-    element: Element,
-    width: Float,
-    height: Float,
-    x: Float,
-    y: Float
-): Unit = js(
-    """
-    {
-        element.style.width = width + 'px';
-        element.style.height = height + 'px';
-        element.style.left = x + 'px';
-        element.style.top = y + 'px';
-    }
-"""
-)
-
-val NoOpUpdate: Element.() -> Unit = {}
-
-private class ComponentInfo<T : Element> {
-    lateinit var container: Element
-    lateinit var component: T
-    lateinit var updater: Updater<T>
-}
 
 private class Updater<T : Element>(
     private val component: T,
     update: (T) -> Unit
 ) {
     private var isDisposed = false
+
     private val snapshotObserver = SnapshotStateObserver { command ->
         command()
     }
+
     private val scheduleUpdate = { _: T ->
-        if (isDisposed.not()) {
+        if(isDisposed.not()) {
             performUpdate()
         }
     }
@@ -150,4 +209,9 @@ private class Updater<T : Element>(
         snapshotObserver.clear()
         isDisposed = true
     }
+}
+
+val LocalLayerContainer = staticCompositionLocalOf<Element> {
+    error("CompositionLocal LayerContainer not provided")
+    // you can replace this with document.body!!
 }
