@@ -35,7 +35,6 @@ actual fun VideoPlayer(
     }
 }
 
-@OptIn(ExperimentalForeignApi::class)
 @Composable
 fun AvPlayerView(modifier: Modifier = Modifier, url: String) {
     val player = remember {
