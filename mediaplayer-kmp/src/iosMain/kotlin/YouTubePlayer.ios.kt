@@ -6,6 +6,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.interop.UIKitView
+import androidx.compose.ui.viewinterop.UIKitInteropProperties
+import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.AVFoundation.AVPlayer
@@ -51,19 +53,15 @@ fun AvPlayerView(modifier: Modifier = Modifier, url: String) {
             playerContainer.addSubview(avPlayerViewController.view)
             playerContainer
         },
-        onResize = { view: UIView, rect: CValue<CGRect> ->
-            CATransaction.begin()
-            CATransaction.setValue(true, kCATransactionDisableActions)
-            view.layer.setFrame(rect)
-            playerLayer.setFrame(rect)
-            avPlayerViewController.view.layer.frame = rect
-            CATransaction.commit()
-        },
+        modifier = modifier,
         update = { view ->
             player?.play()
             avPlayerViewController.player?.play()
         },
-        modifier = modifier
+        properties = UIKitInteropProperties(
+            isInteractive = true,
+            isNativeAccessibilityEnabled = true
+        )
     )
 }
 
@@ -105,19 +103,19 @@ actual fun MediaPlayer(
             playerContainer.addSubview(avPlayerViewController.view)
             playerContainer
         },
-        onResize = { view: UIView, rect: CValue<CGRect> ->
-            CATransaction.begin()
-            CATransaction.setValue(true, kCATransactionDisableActions)
-            view.layer.setFrame(rect)
-            playerLayer.setFrame(rect)
-            avPlayerViewController.view.layer.frame = rect
-            CATransaction.commit()
-        },
+        modifier = modifier,
         update = { view ->
             player?.play()
             avPlayerViewController.player?.play()
         },
-        modifier = modifier
+        onRelease = {
+            player?.play()
+            avPlayerViewController.player?.play()
+        },
+        properties = UIKitInteropProperties(
+            isInteractive = true,
+            isNativeAccessibilityEnabled = true
+        )
     )
 }
 
@@ -167,21 +165,22 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier) {
         </html>
     """.trimIndent()
 
-    UIKitView(
+    UIKitView<WKWebView>(
         factory = {
             val webView = WKWebView()
             webView.scrollView.scrollEnabled = false
             webView.loadHTMLString(htmlContent, baseURL = null)
             webView
         },
-        onResize = { view: UIView, rect: CValue<CGRect> ->
-            view.setFrame(rect)
-        },
+        modifier = modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 13f),
         update = { view ->
             // Update logic if needed
         },
-        modifier = modifier
-            .fillMaxWidth()
-            .aspectRatio(16f / 13f)
+        properties = UIKitInteropProperties(
+            isInteractive = true,
+            isNativeAccessibilityEnabled = true
+        )
     )
 }
