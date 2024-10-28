@@ -12,7 +12,7 @@ compose = "1.7.0"
 androidx-appcompat = "1.7.0"
 androidx-activityCompose = "1.9.3"
 compose-uitooling = "1.7.4"
-kotlinx-coroutines = "1.9.0-RC"
+kotlinx-coroutines = "1.9.0"
 
 
 
