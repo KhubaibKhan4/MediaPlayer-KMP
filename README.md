@@ -136,6 +136,16 @@ https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/657ad29d-5129-4f
 
 https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/efd68685-2f41-4445-ad76-c183869ab93a
 
+## Star History
+
+<a href="https://star-history.com/#KhubaibKhan4/MediaPlayer-KMP&Timeline">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=KhubaibKhan4/MediaPlayer-KMP&type=Timeline&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=KhubaibKhan4/MediaPlayer-KMP&type=Timeline" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=KhubaibKhan4/MediaPlayer-KMP&type=Timeline" />
+ </picture>
+</a>
+
 
   ## Contribution Guidelines
 We welcome contributions to the MediaPlayer-KMP Library Project! To contribute, please follow these guidelines:
