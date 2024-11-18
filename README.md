@@ -146,6 +146,14 @@ https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/efd68685-2f41-44
  </picture>
 </a>
 
+**Stargazers**
+
+[![Stargazers repo roster for @KhubaibKhan4/MediaPlayer-KMP](http://reporoster.com/stars/dark/KhubaibKhan4/MediaPlayer-KMP)](https://github.com/KhubaibKhan4/MediaPlayer-KMP/stargazers)
+
+**Forkers**
+
+[![Forkers repo roster for @KhubaibKhan4/MediaPlayer-KMP](http://reporoster.com/forks/dark/KhubaibKhan4/MediaPlayer-KMP)](https://github.com/KhubaibKhan4/MediaPlayer-KMP/network/members)
+
 
   ## Contribution Guidelines
 We welcome contributions to the MediaPlayer-KMP Library Project! To contribute, please follow these guidelines:
