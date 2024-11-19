@@ -73,25 +73,26 @@ import org.jetbrains.kotlinx.multiplatform.library.template.R
 actual fun VideoPlayer(
     modifier: Modifier,
     url: String,
+    autoPlay: Boolean
 ) {
     when {
         url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
             val videoId = extractVideoId(url)
             if (videoId != null) {
-                YoutubeVideoPlayer(youtubeURL = url)
+                YoutubeVideoPlayer(youtubeURL = url, autoPlay = autoPlay)
             } else {
                 println("Video Id is Null or Invalid")
             }
         }
 
         isVideoFile(url) -> {
-            ExoPlayerVideoPlayer(videoURL = url!!)
+            ExoPlayerVideoPlayer(videoURL = url!!, autoPlay = autoPlay)
         }
     }
 }
 
 @Composable
-fun ExoPlayerVideoPlayer(videoURL: String) {
+fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
@@ -108,7 +109,10 @@ fun ExoPlayerVideoPlayer(videoURL: String) {
                 isLoading = playbackState == Player.STATE_BUFFERING
             }
         })
-        exoPlayer.playWhenReady = true
+        when(autoPlay){
+            true -> exoPlayer.playWhenReady = true
+            false -> exoPlayer.playWhenReady = false
+        }
 
         onDispose {
             exoPlayer.release()
@@ -185,10 +189,9 @@ fun handleFullScreen(activity: ComponentActivity, isFullScreen: Boolean) {
 
 fun isVideoFile(url: String?): Boolean {
     return url?.matches(
-        Regex(
-            ".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg)\$",
-            RegexOption.IGNORE_CASE
-        )
+        Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg|m3u8|ts|dash)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.matches(
+        Regex(".*(stream|video|live|media).*", RegexOption.IGNORE_CASE)
     ) == true
 }
 
@@ -199,6 +202,7 @@ fun YoutubeVideoPlayer(
     isPlaying: (Boolean) -> Unit = {},
     isLoading: (Boolean) -> Unit = {},
     onVideoEnded: () -> Unit = {},
+    autoPlay: Boolean
 ) {
     val mContext = LocalContext.current
     val mLifeCycleOwner = LocalLifecycleOwner.current
@@ -305,9 +309,13 @@ fun YoutubeVideoPlayer(
     }
 
     val playerBuilder = IFramePlayerOptions.Builder().apply {
+        val autoPlay = when(autoPlay){
+            true -> 1
+            false -> 0
+        }
         controls(1)
         fullscreen(1)
-        autoplay(1)
+        autoplay(autoPlay)
         modestBranding(1)
         ccLoadPolicy(1)
         rel(0)
@@ -379,6 +387,7 @@ fun ExoPlayerAudioPlayer(
     audioURL: String,
     startTime: Color,
     endTime: Color,
+    autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
@@ -396,7 +405,10 @@ fun ExoPlayerAudioPlayer(
         val mediaItem = MediaItem.fromUri(audioURL)
         exoPlayer.setMediaItem(mediaItem)
         exoPlayer.prepare()
-        exoPlayer.playWhenReady = true
+        when(autoPlay){
+            true -> exoPlayer.playWhenReady = true
+            false -> exoPlayer.playWhenReady = false
+        }
 
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -512,6 +524,7 @@ actual fun MediaPlayer(
     url: String,
     startTime: Color,
     endTime: Color,
+    autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
@@ -522,18 +535,21 @@ actual fun MediaPlayer(
             audioURL = url,
             startTime = startTime,
             endTime = endTime,
+            autoPlay = autoPlay,
             volumeIconColor = volumeIconColor,
             playIconColor = playIconColor,
             sliderTrackColor = sliderTrackColor,
             sliderIndicatorColor = sliderIndicatorColor
         )
     } else {
-        ExoPlayerVideoPlayer(videoURL = url)
+        ExoPlayerVideoPlayer(videoURL = url, autoPlay = autoPlay)
     }
 }
 
 fun isAudioFile(url: String?): Boolean {
     return url?.matches(
-        Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)
+        Regex(".*\\.(mp3|wav|aac|ogg|m4a|m3u|pls|m3u8)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.matches(
+        Regex(".*(radio|stream|icecast|shoutcast|audio|listen).*", RegexOption.IGNORE_CASE)
     ) == true
 }

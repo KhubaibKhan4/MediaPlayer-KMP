@@ -14,13 +14,14 @@ import javax.swing.JPanel
 fun DesktopWebView(
     modifier: Modifier,
     url: String,
+    autoPlay: Boolean
 ) {
     val jPanel: JPanel = remember { JPanel() }
     val jfxPanel = JFXPanel()
 
     SwingPanel(
         factory = {
-            jfxPanel.apply { buildWebView(url) }
+            jfxPanel.apply { buildWebView(url,autoPlay) }
             jPanel.add(jfxPanel)
         },
         modifier = modifier,
@@ -29,7 +30,7 @@ fun DesktopWebView(
     DisposableEffect(url) { onDispose { jPanel.remove(jfxPanel) } }
 }
 
-private fun JFXPanel.buildWebView(url: String) {
+private fun JFXPanel.buildWebView(url: String,autoPlay: Boolean) {
     Platform.runLater {
         val webView = WebView()
         val webEngine = webView.engine
@@ -61,6 +62,19 @@ private fun JFXPanel.buildWebView(url: String) {
                     }, 1000); // Adjust the timeout value as needed
                 """.trimIndent()
                 webEngine.executeScript(script)
+
+                if (autoPlay) {
+                    val autoPlayScript = """
+                        setTimeout(function() {
+                            var video = document.querySelector('video');
+                            if (video) {
+                                video.play();
+                            }
+                        }, 1000); // Adjust the timeout value if necessary
+                    """.trimIndent()
+
+                    webEngine.executeScript(autoPlayScript)
+                }
             }
         }
     }

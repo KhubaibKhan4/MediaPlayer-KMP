@@ -25,18 +25,19 @@ import platform.WebKit.WKWebView
 actual fun VideoPlayer(
     modifier: Modifier,
     url: String,
+    autoPlay: Boolean
 ) {
     if (url.contains("youtube.com") || url.contains("youtu.be")) {
-        YouTubeIFramePlayer(url = url, modifier = modifier)
+        YouTubeIFramePlayer(url = url, modifier = modifier,autoPlay = autoPlay)
     } else if (isVideoFile(url) || isAudioFile(url)) {
-        AvPlayerView(modifier,url)
+        AvPlayerView(modifier,url,autoPlay)
     } else {
         Text("Unsupported media format", modifier = modifier)
     }
 }
 
 @Composable
-fun AvPlayerView(modifier: Modifier = Modifier, url: String) {
+fun AvPlayerView(modifier: Modifier = Modifier, url: String, autoPlay: Boolean) {
     val player = remember {
         NSURL.URLWithString(url.toString())?.let { AVPlayer(uRL = it) }
     }
@@ -44,6 +45,7 @@ fun AvPlayerView(modifier: Modifier = Modifier, url: String) {
     val avPlayerViewController = remember { AVPlayerViewController() }
     avPlayerViewController.player = player
     avPlayerViewController.showsPlaybackControls = true
+    avPlayerViewController.allowsPictureInPicturePlayback = true
 
     playerLayer.player = player
     UIKitView(
@@ -54,7 +56,12 @@ fun AvPlayerView(modifier: Modifier = Modifier, url: String) {
         },
         modifier = modifier,
         update = { view ->
-            player?.play()
+            when(autoPlay){
+                true -> player?.play()
+                false -> {
+
+                }
+            }
             avPlayerViewController.player?.play()
         },
         properties = UIKitInteropProperties(
@@ -64,16 +71,31 @@ fun AvPlayerView(modifier: Modifier = Modifier, url: String) {
     )
 }
 
-fun isVideoFile(url: String?): Boolean {
-    return url?.matches(Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg)\$", RegexOption.IGNORE_CASE)) == true
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(
+        Regex(".*\\.(mp3|wav|aac|ogg|m4a|m3u|pls|m3u8)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.matches(
+        Regex(".*(radio|stream|icecast|shoutcast|audio|listen).*", RegexOption.IGNORE_CASE)
+    ) == true
 }
-@OptIn(ExperimentalForeignApi::class)
+
+fun isVideoFile(url: String?): Boolean {
+    return url?.matches(
+        Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg|m3u8|ts|dash)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.matches(
+        Regex(".*(stream|video|live).*", RegexOption.IGNORE_CASE)
+    ) == true
+}
+
+
+
 @Composable
 actual fun MediaPlayer(
     modifier: Modifier,
     url: String,
     startTime: Color,
     endTime: Color,
+    autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
@@ -94,6 +116,7 @@ actual fun MediaPlayer(
     val avPlayerViewController = remember { AVPlayerViewController() }
     avPlayerViewController.player = player
     avPlayerViewController.showsPlaybackControls = true
+    avPlayerViewController.allowsPictureInPicturePlayback = true
 
     playerLayer.player = player
     UIKitView(
@@ -104,7 +127,12 @@ actual fun MediaPlayer(
         },
         modifier = modifier,
         update = { view ->
-            player?.play()
+            when(autoPlay){
+                true -> player?.play()
+                false -> {
+
+                }
+            }
             avPlayerViewController.player?.play()
         },
         onRelease = {
@@ -118,15 +146,14 @@ actual fun MediaPlayer(
     )
 }
 
-fun isAudioFile(url: String?): Boolean {
-    return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
-}
-
-@OptIn(ExperimentalForeignApi::class)
 @Composable
-fun YouTubeIFramePlayer(url: String, modifier: Modifier) {
+fun YouTubeIFramePlayer(url: String, modifier: Modifier,autoPlay: Boolean) {
     val videoId = remember(url) {
         url?.substringAfter("v=")?.substringBefore("&") ?: url?.substringAfterLast("/")
+    }
+    val isAutoPlay = when(autoPlay){
+        true -> 1
+        false -> 0
     }
     val htmlContent = """
         <html>
@@ -156,7 +183,7 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier) {
         <body>
             <div class="video-container">
                 <iframe 
-                    src="https://www.youtube.com/embed/$videoId?autoplay=1" 
+                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay" 
                     allow="autoplay;">
                 </iframe>
             </div>

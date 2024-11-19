@@ -3,7 +3,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 
 @Composable
-expect fun VideoPlayer(modifier: Modifier, url: String)
+expect fun VideoPlayer(modifier: Modifier, url: String, autoPlay: Boolean)
 
 @Composable
 expect fun MediaPlayer(
@@ -11,6 +11,7 @@ expect fun MediaPlayer(
     url: String,
     startTime: Color,
     endTime: Color,
+    autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,

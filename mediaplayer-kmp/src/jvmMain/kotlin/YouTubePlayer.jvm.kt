@@ -13,17 +13,18 @@ import androidx.compose.ui.graphics.Color
 actual fun VideoPlayer(
     modifier: Modifier,
     url: String,
+    autoPlay: Boolean
 ) {
 
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
             val videoId = splitLinkForVideoId(url)
-            DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId")
+            DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId", autoPlay)
         }
 
         isVideoFile(url) -> {
             url?.let {
-                DesktopVideoPlayer(modifier, videoURL = it)
+                DesktopVideoPlayer(modifier, videoURL = it,autoPlay = autoPlay)
             }
         }
     }
@@ -33,11 +34,12 @@ actual fun VideoPlayer(
 @Composable
 fun DesktopVideoPlayer(
     modifier: Modifier,
-    videoURL: String
+    videoURL: String,
+    autoPlay: Boolean
 ) {
     Box(modifier = modifier) {
         var isLoading by remember { mutableStateOf(true) }
-        DesktopWebView(modifier, videoURL)
+        DesktopWebView(modifier, videoURL,autoPlay)
 
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -62,9 +64,11 @@ fun splitLinkForVideoId(
 
 @Composable
 actual fun MediaPlayer(
-    modifier: Modifier, url: String,
+    modifier: Modifier,
+    url: String,
     startTime: Color,
     endTime: Color,
+    autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
@@ -97,7 +101,10 @@ actual fun MediaPlayer(
         }
     }
 }
-
 fun isAudioFile(url: String?): Boolean {
-    return url?.matches(Regex(".*\\.(mp3|wav|aac|ogg|m4a)\$", RegexOption.IGNORE_CASE)) == true
+    return url?.matches(
+        Regex(".*\\.(mp3|wav|aac|ogg|m4a|m3u|pls|m3u8)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.matches(
+        Regex(".*(radio|stream|icecast|shoutcast|audio|listen).*", RegexOption.IGNORE_CASE)
+    ) == true
 }
