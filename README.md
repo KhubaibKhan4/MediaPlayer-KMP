@@ -11,6 +11,7 @@
 ![Supported Platforms](https://img.shields.io/badge/platform-iOS-blue.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-JS-yellow.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-JVM-red.svg)
+![Supported Platforms](https://img.shields.io/badge/platform-WASMJS-blue.svg)
 <img src="https://img.shields.io/liberapay/patrons/KhubaibKhanDev.svg?logo=liberapay">
 
 ![Untitledvideo-MadewithClipchamp57-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/37a34a60-e5ad-48c5-9e4e-7a974cd40c62)
@@ -40,7 +41,7 @@ You can include MediaPlayer-KMP in your project by adding the following dependen
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "2.0.2"
+mediaPlayerKMP = "2.0.3"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -49,7 +50,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:2.0.2")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:2.0.3")
 ```
 
 
