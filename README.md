@@ -27,6 +27,8 @@ MediaPlayer-KMP is a Kotlin Multiplatform (KMP) library that allows you to displ
 - **YouTube Video Playback:** Easily load and play YouTube videos with minimal setup.
 - **Audio Player Playback:** Easily load and play Audios with minimal setup.
 - **Event Handling:** Provides callbacks and event listeners for video playback actions and events.
+- **Streaming Support:** Provides Streaming Support For the Video and Audio Links.
+- **AutoPlay:** AutoPlayer Support Implementation.
 
 ## Future Plans 
 - **Desktop Playback Support**.
@@ -41,7 +43,7 @@ You can include MediaPlayer-KMP in your project by adding the following dependen
 **Version Catelog**
 ```
 [versions]
-mediaPlayerKMP = "2.0.3"
+mediaPlayerKMP = "2.0.4"
 
 [libraries]
 alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
@@ -50,7 +52,7 @@ alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "
 
 
 ```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:2.0.3")
+implementation("io.github.khubaibkhan4:mediaplayer-kmp:2.0.4")
 ```
 
 
