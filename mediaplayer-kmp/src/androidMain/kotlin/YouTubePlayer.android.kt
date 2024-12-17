@@ -16,6 +16,7 @@ import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -33,6 +36,7 @@ import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
@@ -49,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -556,4 +561,95 @@ fun isAudioFile(url: String?): Boolean {
     ) == true || url?.matches(
         Regex(".*(radio|stream|icecast|shoutcast|audio|listen).*", RegexOption.IGNORE_CASE)
     ) == true
+}
+
+@Composable
+actual fun ReelsView(
+    videoUrls: List<String>,
+    modifier: Modifier,
+    autoPlay: Boolean,
+    onInteraction: (Int, String) -> Unit
+) {
+    val pagerState = rememberPagerState(pageCount = {videoUrls.size})
+
+    VerticalPager(
+        state = pagerState,
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) { pageIndex ->
+        ReelsPage(
+            videoUrl = videoUrls[pageIndex],
+            pageIndex = pageIndex,
+            autoPlay = autoPlay && pagerState.currentPage == pageIndex,
+            onInteraction = onInteraction
+        )
+    }
+}
+
+@Composable
+fun ReelsPage(
+    videoUrl: String,
+    pageIndex: Int,
+    autoPlay: Boolean,
+    onInteraction: (Int, String) -> Unit,
+    isPlaying: (Boolean) -> Unit = {},
+    isLoading: (Boolean) -> Unit = {},
+    onVideoEnded: () -> Unit = {},
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black)
+    ) {
+        YoutubeVideoPlayer(
+            youtubeURL = videoUrl,
+            autoPlay = autoPlay,
+            modifier = Modifier.fillMaxSize(),
+            isPlaying = isPlaying,
+            isLoading = isLoading,
+            onVideoEnded = onVideoEnded
+        )
+
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(
+                text = "Video $pageIndex",
+                color = Color.White,
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.titleLarge
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "❤️ Like",
+                    color = Color.White,
+                    modifier = Modifier.clickable {
+                        onInteraction(pageIndex, "Like")
+                    }
+                )
+                Text(
+                    text = "💬 Comment",
+                    color = Color.White,
+                    modifier = Modifier.clickable {
+                        onInteraction(pageIndex, "Comment")
+                    }
+                )
+                Text(
+                    text = "📤 Share",
+                    color = Color.White,
+                    modifier = Modifier.clickable {
+                        onInteraction(pageIndex, "Share")
+                    }
+                )
+            }
+        }
+    }
 }
