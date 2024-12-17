@@ -151,7 +151,7 @@ https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/efd68685-2f41-44
 
 **Stargazers**
 
-[![Stargazers repo roster for @KhubaibKhan4/MediaPlayer-KMP](http://reporoster.com/stars/dark/KhubaibKhan4/MediaPlayer-KMP)](https://github.com/KhubaibKhan4/MediaPlayer-KMP/stargazers)
+[![Stargazers repo roster for @KhubaibKhan4/MediaPlayer-KMP](http://reporoster.com/stars/dark/KhubaibKhan4/MediaPlayer-KMP)](https://github.com/KhubaibKhan4/YMediaPlayer-KMP/stargazers)
 
 **Forkers**
 
