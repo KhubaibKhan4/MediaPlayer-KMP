@@ -55,7 +55,10 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.PlayerView
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
@@ -385,6 +388,7 @@ fun extractVideoId(url: String?): String? {
 @Composable
 fun ExoPlayerAudioPlayer(
     audioURL: String,
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
@@ -402,13 +406,18 @@ fun ExoPlayerAudioPlayer(
     var volume by remember { mutableStateOf(1f) }
 
     DisposableEffect(audioURL) {
-        val mediaItem = MediaItem.fromUri(audioURL)
-        exoPlayer.setMediaItem(mediaItem)
-        exoPlayer.prepare()
-        when(autoPlay){
-            true -> exoPlayer.playWhenReady = true
-            false -> exoPlayer.playWhenReady = false
+        val dataSourceFactory = DefaultDataSource.Factory(context) {
+            DefaultHttpDataSource.Factory()
+                .setDefaultRequestProperties(headers)
+                .createDataSource()
         }
+
+        val mediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(audioURL))
+
+        exoPlayer.setMediaSource(mediaSource)
+        exoPlayer.prepare()
+        exoPlayer.playWhenReady = autoPlay
 
         val listener = object : Player.Listener {
             override fun onPlaybackStateChanged(state: Int) {
@@ -522,6 +531,7 @@ fun formatTime(ms: Long): String {
 actual fun MediaPlayer(
     modifier: Modifier,
     url: String,
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
@@ -533,6 +543,7 @@ actual fun MediaPlayer(
     if (isAudioFile(url)) {
         ExoPlayerAudioPlayer(
             audioURL = url,
+            headers = headers,
             startTime = startTime,
             endTime = endTime,
             autoPlay = autoPlay,

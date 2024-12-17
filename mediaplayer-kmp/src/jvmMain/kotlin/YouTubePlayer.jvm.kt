@@ -66,6 +66,7 @@ fun splitLinkForVideoId(
 actual fun MediaPlayer(
     modifier: Modifier,
     url: String,
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
@@ -79,24 +80,28 @@ actual fun MediaPlayer(
             DesktopAudioPlayer(
                 modifier,
                 audioURL = url,
-                startTime,
-                endTime,
-                volumeIconColor,
-                playIconColor,
-                sliderTrackColor,
-                sliderIndicatorColor
+                headers = headers,
+                startTime = startTime,
+                endTime = endTime,
+                autoPlay = autoPlay,
+                volumeIconColor = volumeIconColor,
+                playIconColor = playIconColor,
+                sliderTrackColor = sliderTrackColor,
+                sliderIndicatorColor = sliderIndicatorColor
             )
         }
-        else ->{
+        else -> {
             DesktopAudioPlayer(
                 modifier,
                 audioURL = url,
-                startTime,
-                endTime,
-                volumeIconColor,
-                playIconColor,
-                sliderTrackColor,
-                sliderIndicatorColor
+                headers = headers,
+                startTime = startTime,
+                endTime = endTime,
+                autoPlay = autoPlay,
+                volumeIconColor = volumeIconColor,
+                playIconColor = playIconColor,
+                sliderTrackColor = sliderTrackColor,
+                sliderIndicatorColor = sliderIndicatorColor
             )
         }
     }

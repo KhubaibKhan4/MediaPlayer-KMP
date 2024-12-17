@@ -9,6 +9,7 @@ expect fun VideoPlayer(modifier: Modifier, url: String, autoPlay: Boolean)
 expect fun MediaPlayer(
     modifier: Modifier,
     url: String,
+    headers: Map<String, String> = emptyMap(),
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
