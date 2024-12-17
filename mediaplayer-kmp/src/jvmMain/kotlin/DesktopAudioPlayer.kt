@@ -29,34 +29,42 @@ import javafx.scene.layout.StackPane
 import javafx.scene.media.Media
 import javafx.scene.media.MediaPlayer
 import javafx.util.Duration
+import java.io.File
 import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import javax.swing.JPanel
 
 @Composable
 fun DesktopAudioPlayer(
     modifier: Modifier = Modifier,
     audioURL: String,
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
+    autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
     sliderIndicatorColor: Color
 ) {
     val mediaPlayerState = remember { mutableStateOf<MediaPlayer?>(null) }
-    val isPlaying = remember { mutableStateOf(false) }
+    val isPlaying = remember { mutableStateOf(autoPlay) }
     val currentTime = remember { mutableStateOf(0.0) }
     val duration = remember { mutableStateOf(0.0) }
     val isLoaded = remember { mutableStateOf(false) }
     val volume = remember { mutableStateOf(0.5) }
 
-    DisposableEffect(audioURL) {
+    DisposableEffect(audioURL, headers) {
+        val proxyUrl = fetchMediaWithHeaders(audioURL, headers)
         Platform.startup {
-            val media = Media(audioURL)
+            val media = Media(proxyUrl)
             val mediaPlayer = MediaPlayer(media).apply {
                 setOnReady {
                     duration.value = media.duration.toSeconds()
                     isLoaded.value = true
+                    if (autoPlay) play()
                 }
                 currentTimeProperty().addListener { _, _, newValue ->
                     currentTime.value = newValue.toSeconds()
@@ -156,6 +164,24 @@ fun DesktopAudioPlayer(
             }
         }
     }
+}
+fun fetchMediaWithHeaders(url: String, headers: Map<String, String>): String {
+    val client = HttpClient.newHttpClient()
+    val requestBuilder = HttpRequest.newBuilder(URI.create(url))
+
+    headers.forEach { (key, value) ->
+        requestBuilder.header(key, value)
+    }
+
+    val request = requestBuilder.build()
+    val response = client.send(request, HttpResponse.BodyHandlers.ofInputStream())
+    val tempFile = File.createTempFile("media", ".tmp")
+    response.body().use { input ->
+        tempFile.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
+    return tempFile.toURI().toString()
 }
 
 fun formatTime(seconds: Double): String {

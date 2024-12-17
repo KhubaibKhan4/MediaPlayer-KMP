@@ -11,7 +11,10 @@ import androidx.compose.ui.viewinterop.UIKitView
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.AVFoundation.AVPlayer
+import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerLayer
+import platform.AVFoundation.AVURLAsset
+import platform.AVFoundation.pause
 import platform.AVFoundation.play
 import platform.AVKit.AVPlayerViewController
 import platform.CoreGraphics.CGRect
@@ -20,6 +23,7 @@ import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCATransactionDisableActions
 import platform.UIKit.UIView
 import platform.WebKit.WKWebView
+import platform.darwin.NSObject
 
 @Composable
 actual fun VideoPlayer(
@@ -93,6 +97,7 @@ fun isVideoFile(url: String?): Boolean {
 actual fun MediaPlayer(
     modifier: Modifier,
     url: String,
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
@@ -102,23 +107,17 @@ actual fun MediaPlayer(
     sliderIndicatorColor: Color
 ) {
     val player = remember {
-        when {
-            url.contains("youtube.com") || url.contains("youtu.be") -> {
-                NSURL.URLWithString(url)?.let { AVPlayer(uRL = it) }
-            }
-            isVideoFile(url) || isAudioFile(url) -> {
-                NSURL.URLWithString(url)?.let { AVPlayer(uRL = it) }
-            }
-            else -> null
-        }
+        createAVPlayerWithHeaders(url, headers)
     }
     val playerLayer = remember { AVPlayerLayer() }
     val avPlayerViewController = remember { AVPlayerViewController() }
+
     avPlayerViewController.player = player
     avPlayerViewController.showsPlaybackControls = true
     avPlayerViewController.allowsPictureInPicturePlayback = true
 
     playerLayer.player = player
+
     UIKitView(
         factory = {
             val playerContainer = UIView()
@@ -126,24 +125,30 @@ actual fun MediaPlayer(
             playerContainer
         },
         modifier = modifier,
-        update = { view ->
-            when(autoPlay){
-                true -> player?.play()
-                false -> {
-
-                }
+        update = { _ ->
+            if (autoPlay) {
+                player?.play()
             }
-            avPlayerViewController.player?.play()
         },
         onRelease = {
-            player?.play()
-            avPlayerViewController.player?.play()
+            player?.pause()
         },
         properties = UIKitInteropProperties(
             isInteractive = true,
             isNativeAccessibilityEnabled = true
         )
     )
+}
+
+/**
+ * Helper function to create AVPlayer with headers
+ */
+private fun createAVPlayerWithHeaders(url: String, headers: Map<String, String>): AVPlayer? {
+    val url = NSURL.URLWithString(url) ?: return null
+
+    val asset = AVURLAsset(uRL = url, options = mapOf("AVURLAssetHTTPHeaderFieldsKey" to headers))
+    val item = AVPlayerItem(asset = asset)
+    return AVPlayer(playerItem = item)
 }
 
 @Composable
