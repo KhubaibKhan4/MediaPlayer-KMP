@@ -1,14 +1,38 @@
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.SwingPanel
 import javafx.application.Platform
 import javafx.concurrent.Worker
 import javafx.embed.swing.JFXPanel
 import javafx.scene.Scene
 import javafx.scene.web.WebView
+import javax.swing.JPanel
 
 fun initJavaFX() {
     System.setProperty("prism.order", "sw")
     System.setProperty("prism.verbose", "true")
 }
+@Composable
+fun DesktopWebView(
+    modifier: Modifier,
+    url: String,
+    autoPlay: Boolean
+) {
+    val jPanel: JPanel = remember { JPanel() }
+    val jfxPanel = JFXPanel()
 
+    SwingPanel(
+        factory = {
+            jfxPanel.apply { buildWebView(url,autoPlay) }
+            jPanel.add(jfxPanel)
+        },
+        modifier = modifier,
+    )
+
+    DisposableEffect(url) { onDispose { jPanel.remove(jfxPanel) } }
+}
 private fun JFXPanel.buildWebView(url: String, autoPlay: Boolean) {
     initJavaFX()
     Platform.runLater {
