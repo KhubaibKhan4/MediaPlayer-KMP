@@ -1,4 +1,5 @@
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.pm.ActivityInfo
 import android.content.pm.ConfigurationInfo
 import android.content.res.Configuration
@@ -216,36 +217,6 @@ fun YoutubeVideoPlayer(
     val playerFragment = YouTubePlayerView(mContext)
     var isFullScreen by remember { mutableStateOf(false) }
 
-    val playerStateListener = object : AbstractYouTubePlayerListener() {
-        override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
-            super.onReady(youTubePlayer)
-            player = youTubePlayer
-            youTubePlayer.loadVideo(videoId!!, startTimeInSeconds)
-        }
-
-        override fun onStateChange(
-            youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer,
-            state: PlayerConstants.PlayerState,
-        ) {
-            when (state) {
-                PlayerConstants.PlayerState.BUFFERING -> {
-                    isLoading.invoke(true)
-                    isPlaying.invoke(false)
-                }
-                PlayerConstants.PlayerState.PLAYING -> {
-                    isLoading.invoke(false)
-                    isPlaying.invoke(true)
-                }
-                PlayerConstants.PlayerState.ENDED -> {
-                    isPlaying.invoke(false)
-                    isLoading.invoke(false)
-                    onVideoEnded.invoke()
-                }
-                else -> {}
-            }
-        }
-    }
-
     var fullscreenView: View? by remember { mutableStateOf(null) }
 
     val fullScreenListener = object : FullscreenListener {
@@ -257,79 +228,70 @@ fun YoutubeVideoPlayer(
             activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
             Handler(Looper.getMainLooper()).post {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity.window.setDecorFitsSystemWindows(false)
-                    activity.window.insetsController?.apply {
-                        hide(WindowInsets.Type.systemBars())
-                        systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-                    }
-                } else {
-                    @Suppress("DEPRECATION")
-                    activity.window.setFlags(
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                        WindowManager.LayoutParams.FLAG_FULLSCREEN
-                    )
-                    activity.window.decorView.systemUiVisibility =
-                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                                View.SYSTEM_UI_FLAG_FULLSCREEN
-                }
-
-                (activity.window.decorView as ViewGroup).apply {
-                    addView(view)
-                }
+                (activity.window.decorView as ViewGroup).addView(view)
+                configureFullScreen(activity, true)
             }
-
             player?.play()
         }
 
         override fun onExitFullscreen() {
             isFullScreen = false
-            activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
-
             playerFragment.visibility = View.VISIBLE
+            fullscreenView?.let { view ->
+                (activity.window.decorView as ViewGroup).removeView(view)
+                fullscreenView = null
+            }
 
             Handler(Looper.getMainLooper()).post {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                    activity.window.setDecorFitsSystemWindows(true)
-                    activity.window.insetsController?.apply {
-                        show(WindowInsets.Type.systemBars())
-                    }
-                } else {
-                    @Suppress("DEPRECATION")
-                    activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
-                    activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                }
-
-                fullscreenView?.let { view ->
-                    (activity.window.decorView as ViewGroup).apply {
-                        removeView(view)
-                    }
-                }
+                activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+                configureFullScreen(activity, false)
             }
             player?.play()
         }
     }
 
-    val playerBuilder = IFramePlayerOptions.Builder().apply {
-        val autoPlay = when(autoPlay){
-            true -> 1
-            false -> 0
+    val playerStateListener = object : AbstractYouTubePlayerListener() {
+        override fun onReady(youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer) {
+            player = youTubePlayer
+            youTubePlayer.loadVideo(videoId!!, startTimeInSeconds)
         }
+
+        override fun onStateChange(
+            youTubePlayer: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer,
+            state: PlayerConstants.PlayerState,
+        ) {
+            when (state) {
+                PlayerConstants.PlayerState.BUFFERING -> {
+                    isLoading(true)
+                    isPlaying(false)
+                }
+                PlayerConstants.PlayerState.PLAYING -> {
+                    isLoading(false)
+                    isPlaying(true)
+                }
+                PlayerConstants.PlayerState.ENDED -> {
+                    isPlaying(false)
+                    isLoading(false)
+                    onVideoEnded()
+                }
+                else -> {}
+            }
+        }
+    }
+
+    val playerBuilder = IFramePlayerOptions.Builder().apply {
         controls(1)
         fullscreen(1)
-        autoplay(autoPlay)
+        autoplay(if (autoPlay) 1 else 0)
         modestBranding(1)
         ccLoadPolicy(1)
         rel(0)
     }
-    val localConfiguration = LocalConfiguration.current
-    LaunchedEffect(isFullScreen){
-        isFullScreen = localConfiguration.orientation == Configuration.ORIENTATION_LANDSCAPE
-    }
 
     AndroidView(
-        modifier = if (isFullScreen) Modifier.fillMaxSize()  else Modifier.animateContentSize().background(Color.Black).fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black),
         factory = {
             playerFragment.apply {
                 enableAutomaticInitialization = false
@@ -339,14 +301,14 @@ fun YoutubeVideoPlayer(
         }
     )
 
-    DisposableEffect(key1 = Unit, effect = {
+    DisposableEffect(Unit) {
         onDispose {
             playerFragment.removeYouTubePlayerListener(playerStateListener)
             playerFragment.removeFullscreenListener(fullScreenListener)
             playerFragment.release()
             player = null
         }
-    })
+    }
 
     DisposableEffect(mLifeCycleOwner) {
         val lifecycle = mLifeCycleOwner.lifecycle
@@ -358,8 +320,39 @@ fun YoutubeVideoPlayer(
             }
         }
         lifecycle.addObserver(observer)
-        onDispose {
-            lifecycle.removeObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+}
+
+fun configureFullScreen(activity: Activity, enable: Boolean) {
+    if (enable) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity.window.setDecorFitsSystemWindows(false)
+            activity.window.insetsController?.apply {
+                hide(WindowInsets.Type.systemBars())
+                systemBarsBehavior = WindowInsetsController.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            activity.window.setFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN
+            )
+            @Suppress("DEPRECATION")
+            activity.window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_FULLSCREEN or
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        }
+    } else {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity.window.setDecorFitsSystemWindows(true)
+            activity.window.insetsController?.show(WindowInsets.Type.systemBars())
+        } else {
+            @Suppress("DEPRECATION")
+            activity.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
+            @Suppress("DEPRECATION")
+            activity.window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
         }
     }
 }
