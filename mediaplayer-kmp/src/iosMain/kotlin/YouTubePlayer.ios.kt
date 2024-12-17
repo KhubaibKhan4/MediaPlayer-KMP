@@ -1,3 +1,4 @@
+import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -8,8 +9,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.CValue
+import kotlinx.cinterop.CValues
+import kotlinx.cinterop.DoubleVar
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.cinterop.cValuesOf
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.memScoped
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVPlayerLayer
@@ -18,11 +25,30 @@ import platform.AVFoundation.pause
 import platform.AVFoundation.play
 import platform.AVKit.AVPlayerViewController
 import platform.CoreGraphics.CGRect
+import platform.CoreGraphics.CGSize
+import platform.Foundation.NSIndexPath
 import platform.Foundation.NSURL
 import platform.QuartzCore.CATransaction
 import platform.QuartzCore.kCATransactionDisableActions
+import platform.UIKit.UICollectionView
+import platform.UIKit.UICollectionViewCell
+import platform.UIKit.UICollectionViewDataSourceProtocol
+import platform.UIKit.UICollectionViewFlowLayout
+import platform.UIKit.UICollectionViewScrollDirection
+import platform.*
+import platform.CoreGraphics.CGPoint
+import platform.CoreGraphics.CGRectGetMidX
+import platform.CoreGraphics.CGRectGetMidY
+import platform.Foundation.NSCoder
+import platform.UIKit.UICollectionViewDelegateProtocol
+import platform.UIKit.UIColor.Companion.blackColor
+import platform.UIKit.UINib
+import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
+import platform.UIKit.UIViewController
+import platform.UIKit.row
 import platform.WebKit.WKWebView
+import platform.darwin.NSInteger
 import platform.darwin.NSObject
 
 @Composable
