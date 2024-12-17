@@ -4,12 +4,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.url.URL
+import org.w3c.files.Blob
+import org.w3c.xhr.BLOB
+import org.w3c.xhr.XMLHttpRequest
+import org.w3c.xhr.XMLHttpRequestResponseType
 
 @Composable
 actual fun VideoPlayer(
@@ -65,19 +71,56 @@ fun HTMLMP4Player(
 fun HTMLAudioPlayer(
     modifier: Modifier,
     audioURL: String,
+    headers: Map<String, String>,
     autoPlay: Boolean
 ) {
+    val audioBlobUrl = remember(audioURL, headers) {
+        fetchAudioBlobUrl(audioURL, headers)
+    }
+
     HtmlView(
         modifier = modifier.fillMaxSize(),
         factory = {
             val audio = createElement("audio")
             audio.setAttribute("controls", "true")
-            audio.setAttribute("src", audioURL)
+            if (audioBlobUrl != null) {
+                audio.setAttribute("src", audioBlobUrl)
+            }
             audio.setAttribute("autoplay", autoPlay.toString())
             audio
         }
     )
 }
+
+/**
+ * Fetches the audio file as a Blob URL with custom headers
+ */
+private fun fetchAudioBlobUrl(audioURL: String, headers: Map<String, String>): String? {
+    var blobUrl: String? = null
+    val xhr = XMLHttpRequest()
+
+    xhr.open("GET", audioURL, false)
+    headers.forEach { (key, value) ->
+        xhr.setRequestHeader(key, value)
+    }
+    xhr.responseType = XMLHttpRequestResponseType.BLOB
+
+    xhr.onload = {
+        if (xhr.status in 200..299) {
+            val blob = xhr.response as Blob
+            blobUrl = URL.createObjectURL(blob)
+        }
+    }
+
+    xhr.onerror = {
+        error("Failed to load audio from $audioURL with headers: $headers")
+    }
+
+    xhr.send()
+
+    return blobUrl
+}
+
 
 fun isAudioFile(url: String?): Boolean {
     return url?.matches(
@@ -106,6 +149,7 @@ fun isVideoFile(url: String?): Boolean {
 actual fun MediaPlayer(
     modifier: Modifier,
     url: String,
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
@@ -116,7 +160,7 @@ actual fun MediaPlayer(
 ) {
     when {
         isAudioFile(url) -> {
-            HTMLAudioPlayer(modifier, audioURL = url, autoPlay = autoPlay)
+            HTMLAudioPlayer(modifier, audioURL = url, autoPlay = autoPlay, headers = headers)
         }
     }
 }
