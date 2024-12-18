@@ -104,6 +104,29 @@ fun main() {
 }
 ```
 
+## Reels View Support
+```groovy
+@Composable
+fun MainScreen() {
+    val videoUrls = listOf(
+        "https://www.example.com/video1.mp4",
+        "https://www.example.com/video2.mp4",
+        "https://www.example.com/video3.mp4"
+    )
+    ReelsView(
+        videoUrls = videoUrls,
+        pagerType = PagerType.Vertical, // Choose PagerType.Vertical or PagerType.Horizontal
+        modifier = Modifier.fillMaxSize(),
+        autoPlay = true, // Enable auto-play for videos
+        onInteraction = { page, url ->
+            println("User interacted with page $page, video URL: $url")
+        }
+    )
+}
+
+
+```
+
 ## Future Plans 
 - Uri Content Setup with Player.
 - Playback Support.
