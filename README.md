@@ -104,6 +104,28 @@ fun main() {
 }
 ```
 
+### Authentication Token Support
+Providing the Auth Tokens are pretty simple. You just need to add the headers. You can add the headers with key and value pairs.
+```groovy
+MediaPlayer(
+    modifier = Modifier.fillMaxSize(),
+    url = "https://example.com/protected-video.mp4",
+    headers = mapOf(
+        "Authorization" to "Bearer your_token",
+        "Custom-Header" to "YourValue"
+    ),
+    startTime = Color.Red,
+    endTime = Color.Blue,
+    autoPlay = true,
+    volumeIconColor = Color.Green,
+    playIconColor = Color.Yellow,
+    sliderTrackColor = Color.Gray,
+    sliderIndicatorColor = Color.Magenta
+)
+
+
+```
+
 ## Reels View Support
 ```groovy
 @Composable
