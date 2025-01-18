@@ -18,14 +18,15 @@ fun initJavaFX() {
 fun DesktopWebView(
     modifier: Modifier,
     url: String,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     val jPanel: JPanel = remember { JPanel() }
     val jfxPanel = JFXPanel()
 
     SwingPanel(
         factory = {
-            jfxPanel.apply { buildWebView(url,autoPlay) }
+            jfxPanel.apply { buildWebView(url, autoPlay, showControls) }
             jPanel.add(jfxPanel)
         },
         modifier = modifier,
@@ -33,7 +34,8 @@ fun DesktopWebView(
 
     DisposableEffect(url) { onDispose { jPanel.remove(jfxPanel) } }
 }
-private fun JFXPanel.buildWebView(url: String, autoPlay: Boolean) {
+
+private fun JFXPanel.buildWebView(url: String, autoPlay: Boolean, showControls: Boolean) {
     initJavaFX()
     Platform.runLater {
         val webView = WebView()
@@ -50,7 +52,8 @@ private fun JFXPanel.buildWebView(url: String, autoPlay: Boolean) {
 
         webEngine.loadWorker.stateProperty().addListener { _, _, newState ->
             if (newState == Worker.State.SUCCEEDED) {
-                val script = """
+                // Script to remove overlays
+                val removeOverlaysScript = """
                     setTimeout(function() {
                         var overlaySelectors = [
                             '.ytp-gradient-top',
@@ -62,9 +65,9 @@ private fun JFXPanel.buildWebView(url: String, autoPlay: Boolean) {
                                 element.style.display = 'none';
                             }
                         });
-                    }, 1000); // Adjust the timeout value as needed
+                    }, 1000);
                 """.trimIndent()
-                webEngine.executeScript(script)
+                webEngine.executeScript(removeOverlaysScript)
 
                 if (autoPlay) {
                     val autoPlayScript = """
@@ -73,11 +76,20 @@ private fun JFXPanel.buildWebView(url: String, autoPlay: Boolean) {
                             if (video) {
                                 video.play();
                             }
-                        }, 1000); // Adjust the timeout value if necessary
+                        }, 1000);
                     """.trimIndent()
-
                     webEngine.executeScript(autoPlayScript)
                 }
+
+                val toggleControlsScript = """
+                    setTimeout(function() {
+                        var video = document.querySelector('video');
+                        if (video) {
+                            video.controls = $showControls;
+                        }
+                    }, 1000);
+                """.trimIndent()
+                webEngine.executeScript(toggleControlsScript)
             }
         }
     }

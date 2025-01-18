@@ -47,7 +47,8 @@ fun DesktopAudioPlayer(
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean
 ) {
     val mediaPlayerState = remember { mutableStateOf<MediaPlayer?>(null) }
     val isPlaying = remember { mutableStateOf(autoPlay) }
@@ -90,77 +91,84 @@ fun DesktopAudioPlayer(
         if (!isLoaded.value) {
             CircularProgressIndicator()
         } else {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                IconButton(onClick = {
-                    mediaPlayerState.value?.let {
-                        if (isPlaying.value) {
-                            it.pause()
-                        } else {
-                            it.play()
+            if (showControls) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    IconButton(onClick = {
+                        mediaPlayerState.value?.let {
+                            if (isPlaying.value) {
+                                it.pause()
+                            } else {
+                                it.play()
+                            }
+                            isPlaying.value = !isPlaying.value
                         }
-                        isPlaying.value = !isPlaying.value
-                    }
-                }) {
-                    Icon(
-                        imageVector = if (isPlaying.value) Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = null,
-                        tint = playIconColor
-                    )
-                }
-
-                Text(
-                    formatTime(currentTime.value),
-                    modifier = Modifier.padding(start = 8.dp),
-                    color = startTime
-                )
-                Slider(
-                    value = currentTime.value.toFloat(),
-                    onValueChange = {
-                        mediaPlayerState.value?.seek(Duration.seconds(it.toDouble()))
-                    },
-                    valueRange = 0f..duration.value.toFloat(),
-                    modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
-                    colors = SliderDefaults.colors(
-                        thumbColor = sliderIndicatorColor,
-                        activeTrackColor = sliderTrackColor
-                    )
-                )
-                Text(
-                    formatTime(duration.value),
-                    modifier = Modifier.padding(end = 8.dp),
-                    color = endTime
-                )
-
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    IconButton(onClick = {
-                        volume.value = (volume.value + 0.1).coerceIn(0.0, 1.0)
-                        mediaPlayerState.value?.volume = volume.value
                     }) {
                         Icon(
-                            imageVector = Icons.Default.VolumeUp,
-                            contentDescription = "Increase Volume",
-                            tint = volumeIconColor
+                            imageVector = if (isPlaying.value) Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = null,
+                            tint = playIconColor
                         )
                     }
-                    IconButton(onClick = {
-                        volume.value = (volume.value - 0.1).coerceIn(0.0, 1.0)
-                        mediaPlayerState.value?.volume = volume.value
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.VolumeDown,
-                            contentDescription = "Decrease Volume",
-                            tint = volumeIconColor
-                        )
-                    }
+
                     Text(
-                        "${(volume.value * 100).toInt()}%",
-                        modifier = Modifier.padding(4.dp),
+                        formatTime(currentTime.value),
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = startTime
+                    )
+                    Slider(
+                        value = currentTime.value.toFloat(),
+                        onValueChange = {
+                            mediaPlayerState.value?.seek(Duration.seconds(it.toDouble()))
+                        },
+                        valueRange = 0f..duration.value.toFloat(),
+                        modifier = Modifier.weight(1f).padding(horizontal = 8.dp),
+                        colors = SliderDefaults.colors(
+                            thumbColor = sliderIndicatorColor,
+                            activeTrackColor = sliderTrackColor
+                        )
+                    )
+                    Text(
+                        formatTime(duration.value),
+                        modifier = Modifier.padding(end = 8.dp),
                         color = endTime
                     )
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        IconButton(onClick = {
+                            volume.value = (volume.value + 0.1).coerceIn(0.0, 1.0)
+                            mediaPlayerState.value?.volume = volume.value
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeUp,
+                                contentDescription = "Increase Volume",
+                                tint = volumeIconColor
+                            )
+                        }
+                        IconButton(onClick = {
+                            volume.value = (volume.value - 0.1).coerceIn(0.0, 1.0)
+                            mediaPlayerState.value?.volume = volume.value
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.VolumeDown,
+                                contentDescription = "Decrease Volume",
+                                tint = volumeIconColor
+                            )
+                        }
+                        Text(
+                            "${(volume.value * 100).toInt()}%",
+                            modifier = Modifier.padding(4.dp),
+                            color = endTime
+                        )
+                    }
                 }
+            } else {
+                Text(
+                    formatTime(currentTime.value) + " / " + formatTime(duration.value),
+                    color = endTime
+                )
             }
         }
     }

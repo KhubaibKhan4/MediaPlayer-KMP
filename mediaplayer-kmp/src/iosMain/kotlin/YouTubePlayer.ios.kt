@@ -40,6 +40,7 @@ import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRectGetMidX
 import platform.CoreGraphics.CGRectGetMidY
 import platform.Foundation.NSCoder
+import platform.UIKit.NSLayoutConstraint
 import platform.UIKit.UICollectionViewDelegateProtocol
 import platform.UIKit.UIColor.Companion.blackColor
 import platform.UIKit.UINib
@@ -53,46 +54,64 @@ import platform.darwin.NSObject
 
 @Composable
 actual fun VideoPlayer(
-    modifier: Modifier,
-    url: String,
-    autoPlay: Boolean
+    modifier: Modifier, url: String, autoPlay: Boolean, showControls: Boolean
 ) {
     if (url.contains("youtube.com") || url.contains("youtu.be")) {
-        YouTubeIFramePlayer(url = url, modifier = modifier,autoPlay = autoPlay)
+        YouTubeIFramePlayer(url = url, modifier = modifier,autoPlay = autoPlay, showControls = showControls)
     } else if (isVideoFile(url) || isAudioFile(url)) {
-        AvPlayerView(modifier,url,autoPlay)
+        AvPlayerView(modifier,url,autoPlay, showControls = showControls)
     } else {
         Text("Unsupported media format", modifier = modifier)
     }
 }
 
 @Composable
-fun AvPlayerView(modifier: Modifier = Modifier, url: String, autoPlay: Boolean) {
-    val player = remember {
-        NSURL.URLWithString(url.toString())?.let { AVPlayer(uRL = it) }
-    }
-    val playerLayer = remember { AVPlayerLayer() }
-    val avPlayerViewController = remember { AVPlayerViewController() }
-    avPlayerViewController.player = player
-    avPlayerViewController.showsPlaybackControls = true
-    avPlayerViewController.allowsPictureInPicturePlayback = true
+fun AvPlayerView(
+    modifier: Modifier = Modifier,
+    url: String,
+    autoPlay: Boolean,
+    showControls: Boolean
+) {
+    val validUrl = remember(url) { NSURL.URLWithString(url) }
 
-    playerLayer.player = player
+    val player = remember {
+        validUrl?.let { AVPlayer(uRL = it) }
+    }
+
+    val avPlayerViewController = remember { AVPlayerViewController() }
+
+    avPlayerViewController.player = player
+    avPlayerViewController.showsPlaybackControls = showControls
+    avPlayerViewController.allowsPictureInPicturePlayback = showControls
+
     UIKitView(
         factory = {
             val playerContainer = UIView()
+
+            avPlayerViewController.view.translatesAutoresizingMaskIntoConstraints = false
             playerContainer.addSubview(avPlayerViewController.view)
+
+            NSLayoutConstraint.activateConstraints(
+                listOf(
+                    avPlayerViewController.view.leadingAnchor.constraintEqualToAnchor(playerContainer.leadingAnchor),
+                    avPlayerViewController.view.trailingAnchor.constraintEqualToAnchor(playerContainer.trailingAnchor),
+                    avPlayerViewController.view.topAnchor.constraintEqualToAnchor(playerContainer.topAnchor),
+                    avPlayerViewController.view.bottomAnchor.constraintEqualToAnchor(playerContainer.bottomAnchor)
+                )
+            )
+
             playerContainer
         },
         modifier = modifier,
-        update = { view ->
-            when(autoPlay){
-                true -> player?.play()
-                false -> {
-
-                }
+        update = { _ ->
+            if (autoPlay) {
+                player?.play()
+            } else {
+                player?.pause()
             }
-            avPlayerViewController.player?.play()
+        },
+        onRelease = {
+            player?.pause()
         },
         properties = UIKitInteropProperties(
             isInteractive = true,
@@ -130,19 +149,18 @@ actual fun MediaPlayer(
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean,
 ) {
     val player = remember {
         createAVPlayerWithHeaders(url, headers)
     }
-    val playerLayer = remember { AVPlayerLayer() }
     val avPlayerViewController = remember { AVPlayerViewController() }
 
+    // Configure the player and controls based on `showControls`
     avPlayerViewController.player = player
-    avPlayerViewController.showsPlaybackControls = true
-    avPlayerViewController.allowsPictureInPicturePlayback = true
-
-    playerLayer.player = player
+    avPlayerViewController.showsPlaybackControls = showControls
+    avPlayerViewController.allowsPictureInPicturePlayback = showControls
 
     UIKitView(
         factory = {
@@ -154,6 +172,8 @@ actual fun MediaPlayer(
         update = { _ ->
             if (autoPlay) {
                 player?.play()
+            } else {
+                player?.pause()
             }
         },
         onRelease = {
@@ -178,14 +198,13 @@ private fun createAVPlayerWithHeaders(url: String, headers: Map<String, String>)
 }
 
 @Composable
-fun YouTubeIFramePlayer(url: String, modifier: Modifier,autoPlay: Boolean) {
+fun YouTubeIFramePlayer(url: String, modifier: Modifier, autoPlay: Boolean, showControls: Boolean) {
     val videoId = remember(url) {
-        url?.substringAfter("v=")?.substringBefore("&") ?: url?.substringAfterLast("/")
+        url.substringAfter("v=").substringBefore("&").ifEmpty { url.substringAfterLast("/") }
     }
-    val isAutoPlay = when(autoPlay){
-        true -> 1
-        false -> 0
-    }
+    val isAutoPlay = if (autoPlay) 1 else 0
+    val controls = if (showControls) 1 else 0
+
     val htmlContent = """
         <html>
         <head>
@@ -214,8 +233,9 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier,autoPlay: Boolean) {
         <body>
             <div class="video-container">
                 <iframe 
-                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay" 
-                    allow="autoplay;">
+                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls" 
+                    allow="autoplay;"
+                    frameborder="0">
                 </iframe>
             </div>
         </body>
@@ -231,9 +251,9 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier,autoPlay: Boolean) {
         },
         modifier = modifier
             .fillMaxWidth()
-            .aspectRatio(16f / 13f),
+            .aspectRatio(16f / 9f),
         update = { view ->
-            // Update logic if needed
+
         },
         properties = UIKitInteropProperties(
             isInteractive = true,

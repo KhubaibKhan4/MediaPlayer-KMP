@@ -10,7 +10,7 @@ media3Exoplayer = "1.5.0"
 core = "12.1.0"
 compose = "1.7.1"
 androidx-appcompat = "1.7.0"
-androidx-activityCompose = "1.9.3"
+androidx-activityCompose = "1.10.0"
 compose-uitooling = "1.7.6"
 kotlinx-coroutines = "1.9.0"
 

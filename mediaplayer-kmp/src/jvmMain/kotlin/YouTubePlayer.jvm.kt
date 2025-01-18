@@ -11,20 +11,18 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 actual fun VideoPlayer(
-    modifier: Modifier,
-    url: String,
-    autoPlay: Boolean
+    modifier: Modifier, url: String, autoPlay: Boolean, showControls: Boolean
 ) {
 
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
             val videoId = splitLinkForVideoId(url)
-            DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId", autoPlay)
+            DesktopWebView(modifier, "https://www.youtube.com/embed/$videoId", autoPlay, showControls)
         }
 
         isVideoFile(url) -> {
             url?.let {
-                DesktopVideoPlayer(modifier, videoURL = it,autoPlay = autoPlay)
+                DesktopVideoPlayer(modifier, videoURL = it,autoPlay = autoPlay, showControls = showControls)
             }
         }
     }
@@ -35,11 +33,12 @@ actual fun VideoPlayer(
 fun DesktopVideoPlayer(
     modifier: Modifier,
     videoURL: String,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     Box(modifier = modifier) {
         var isLoading by remember { mutableStateOf(true) }
-        DesktopWebView(modifier, videoURL,autoPlay)
+        DesktopWebView(modifier, videoURL,autoPlay, showControls)
 
         if (isLoading) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
@@ -73,7 +72,8 @@ actual fun MediaPlayer(
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean
 ) {
     when {
         isAudioFile(url) -> {
@@ -87,7 +87,8 @@ actual fun MediaPlayer(
                 volumeIconColor = volumeIconColor,
                 playIconColor = playIconColor,
                 sliderTrackColor = sliderTrackColor,
-                sliderIndicatorColor = sliderIndicatorColor
+                sliderIndicatorColor = sliderIndicatorColor,
+                showControls = showControls
             )
         }
         else -> {
@@ -101,7 +102,8 @@ actual fun MediaPlayer(
                 volumeIconColor = volumeIconColor,
                 playIconColor = playIconColor,
                 sliderTrackColor = sliderTrackColor,
-                sliderIndicatorColor = sliderIndicatorColor
+                sliderIndicatorColor = sliderIndicatorColor,
+                showControls = showControls
             )
         }
     }
