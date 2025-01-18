@@ -82,7 +82,8 @@ import org.jetbrains.kotlinx.multiplatform.library.template.R
 actual fun VideoPlayer(
     modifier: Modifier,
     url: String,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean,
 ) {
     when {
         url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
@@ -95,13 +96,14 @@ actual fun VideoPlayer(
         }
 
         isVideoFile(url) -> {
-            ExoPlayerVideoPlayer(videoURL = url!!, autoPlay = autoPlay)
+            ExoPlayerVideoPlayer(videoURL = url!!, autoPlay = autoPlay, showControls = showControls)
         }
     }
 }
 
+@OptIn(UnstableApi::class)
 @Composable
-fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean) {
+fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean, showControls: Boolean) {
     val context = LocalContext.current
     val activity = context as ComponentActivity
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
@@ -134,6 +136,11 @@ fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean) {
                 PlayerView(context).apply {
                     player = exoPlayer
                     useController = true
+                    if (showControls) {
+                        showController()
+                    }else{
+                        hideController()
+                    }
                     setControllerVisibilityListener(object : PlayerView.ControllerVisibilityListener {
                         @SuppressLint("ResourceType")
                         override fun onVisibilityChanged(visibility: Int) {
@@ -203,7 +210,6 @@ fun isVideoFile(url: String?): Boolean {
         Regex(".*(stream|video|live|media).*", RegexOption.IGNORE_CASE)
     ) == true
 }
-
 @Composable
 fun YoutubeVideoPlayer(
     modifier: Modifier = Modifier,
@@ -214,8 +220,8 @@ fun YoutubeVideoPlayer(
     autoPlay: Boolean
 ) {
     val mContext = LocalContext.current
-    val mLifeCycleOwner = LocalLifecycleOwner.current
-    val activity = mContext as ComponentActivity
+    val mLifeCycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
+    val activity = (mContext as Activity)
     val videoId = extractVideoId(youtubeURL)
     val startTimeInSeconds = extractStartTime(youtubeURL)
     var player: com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer? = null
@@ -536,7 +542,8 @@ actual fun MediaPlayer(
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean,
 ) {
     if (isAudioFile(url)) {
         ExoPlayerAudioPlayer(
@@ -551,7 +558,7 @@ actual fun MediaPlayer(
             sliderIndicatorColor = sliderIndicatorColor
         )
     } else {
-        ExoPlayerVideoPlayer(videoURL = url, autoPlay = autoPlay)
+        ExoPlayerVideoPlayer(videoURL = url, autoPlay = autoPlay, showControls = showControls)
     }
 }
 

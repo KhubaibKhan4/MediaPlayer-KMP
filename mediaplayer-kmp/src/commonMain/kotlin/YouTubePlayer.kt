@@ -9,20 +9,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-expect fun VideoPlayer(modifier: Modifier, url: String, autoPlay: Boolean)
+expect fun VideoPlayer(modifier: Modifier, url: String, autoPlay: Boolean, showControls: Boolean)
 
 @Composable
 expect fun MediaPlayer(
     modifier: Modifier,
     url: String,
-    headers: Map<String, String> = emptyMap(),
+    headers: Map<String, String>,
     startTime: Color,
     endTime: Color,
     autoPlay: Boolean,
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean= true,
 )
 enum class PagerType {
     Horizontal,
@@ -34,6 +35,7 @@ fun ReelsView(
     pagerType: PagerType,
     modifier: Modifier = Modifier,
     autoPlay: Boolean = true,
+    showControls: Boolean = true,
     onInteraction: (Int, String) -> Unit = { _, _ -> }
 ) {
     val pagerState = rememberPagerState(pageCount = {videoUrls.size})
@@ -47,7 +49,8 @@ fun ReelsView(
                 VideoPlayerScreen(
                     url = videoUrls[page],
                     autoPlay = autoPlay,
-                    onInteraction = { onInteraction(page, videoUrls[page]) }
+                    onInteraction = { onInteraction(page, videoUrls[page]) },
+                    showControls = showControls
                 )
             }
         }
@@ -59,7 +62,8 @@ fun ReelsView(
                 VideoPlayerScreen(
                     url = videoUrls[page],
                     autoPlay = autoPlay,
-                    onInteraction = { onInteraction(page, videoUrls[page]) }
+                    onInteraction = { onInteraction(page, videoUrls[page]) },
+                    showControls = showControls
                 )
             }
         }
@@ -70,13 +74,15 @@ fun ReelsView(
 fun VideoPlayerScreen(
     url: String,
     autoPlay: Boolean,
-    onInteraction: () -> Unit
+    onInteraction: () -> Unit,
+    showControls: Boolean
 ) {
     VideoPlayer(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp),
         url = url,
-        autoPlay = autoPlay
+        autoPlay = autoPlay,
+        showControls = showControls
     )
 }

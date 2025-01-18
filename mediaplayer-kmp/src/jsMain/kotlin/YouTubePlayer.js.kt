@@ -19,18 +19,16 @@ import org.w3c.xhr.XMLHttpRequestResponseType
 
 @Composable
 actual fun VideoPlayer(
-    modifier: Modifier,
-    url: String,
-    autoPlay: Boolean
+    modifier: Modifier, url: String, autoPlay: Boolean, showControls: Boolean
 ) {
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
             val videoId = extractVideoId(url)
-            HTMLVideoPlayer(videoId,modifier,autoPlay)
+            HTMLVideoPlayer(videoId,modifier,autoPlay, showControls)
         }
 
         isVideoFile(url) -> {
-            HTMLMP4Player(modifier, videoURL = url,autoPlay)
+            HTMLMP4Player(modifier, videoURL = url,autoPlay, showControls)
         }
     }
 }
@@ -39,7 +37,8 @@ actual fun VideoPlayer(
 fun HTMLMP4Player(
     modifier: Modifier,
     videoURL: String,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -53,8 +52,12 @@ fun HTMLMP4Player(
                 video.setAttribute("width", "100%")
                 video.setAttribute("height", "100%")
                 video.setAttribute("src", videoURL)
-                video.setAttribute("controls", "true")
-                video.setAttribute("autoplay",autoPlay.toString())
+                if (showControls) {
+                    video.setAttribute("controls", "true")
+                } else {
+                    video.removeAttribute("controls")
+                }
+                video.setAttribute("autoplay", autoPlay.toString())
                 video.addEventListener("loadeddata", {
                     println("Loading Video: false")
                 })
@@ -72,7 +75,8 @@ fun HTMLAudioPlayer(
     modifier: Modifier,
     audioURL: String,
     headers: Map<String, String>,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     val audioBlobUrl = remember(audioURL, headers) {
         fetchAudioBlobUrl(audioURL, headers)
@@ -82,7 +86,11 @@ fun HTMLAudioPlayer(
         modifier = modifier.fillMaxSize(),
         factory = {
             val audio = createElement("audio")
-            audio.setAttribute("controls", "true")
+            if (showControls) {
+                audio.setAttribute("controls", "true")
+            } else {
+                audio.removeAttribute("controls")
+            }
             if (audioBlobUrl != null) {
                 audio.setAttribute("src", audioBlobUrl)
             }
@@ -91,6 +99,7 @@ fun HTMLAudioPlayer(
         }
     )
 }
+
 
 /**
  * Fetches the audio file as a Blob URL with custom headers
@@ -156,11 +165,12 @@ actual fun MediaPlayer(
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean,
 ) {
     when {
         isAudioFile(url) -> {
-            HTMLAudioPlayer(modifier, audioURL = url, autoPlay = autoPlay, headers = headers)
+            HTMLAudioPlayer(modifier, audioURL = url, autoPlay = autoPlay, headers = headers, showControls = showControls)
         }
     }
 }
@@ -169,7 +179,8 @@ actual fun MediaPlayer(
 fun HTMLVideoPlayer(
     videoId: String,
     modifier: Modifier,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -184,32 +195,15 @@ fun HTMLVideoPlayer(
                 iframe.setAttribute("height", "100%")
                 iframe.setAttribute(
                     "src",
-                    "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1&showinfo=0"
+                    "https://www.youtube.com/embed/$videoId?autoplay=${if (autoPlay) 1 else 0}&controls=${if (showControls) 1 else 0}&showinfo=0"
                 )
                 iframe.setAttribute("frameborder", "0")
                 iframe.setAttribute(
                     "allow",
                     "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 )
-                iframe.setAttribute("autoplay", autoPlay.toString())
                 iframe.setAttribute("allowfullscreen", "true")
                 iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade")
-
-                val script = """
-                    setTimeout(function() {
-                        var overlaySelectors = [
-                            '.ytp-gradient-top',
-                            '.ytp-gradient-bottom'
-                        ];
-                        overlaySelectors.forEach(function(selector) {
-                            var element = document.querySelector(selector);
-                            if (element !== null) {
-                                element.style.display = 'none';
-                            }
-                        });
-                    }, 1000);
-                """.trimIndent()
-                injectJavaScript(iframe, script)
                 iframe
             },
             update = {

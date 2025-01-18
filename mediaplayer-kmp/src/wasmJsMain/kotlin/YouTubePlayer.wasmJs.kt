@@ -21,7 +21,8 @@ import org.w3c.xhr.XMLHttpRequestResponseType
 actual fun VideoPlayer(
     modifier: Modifier,
     url: String,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
@@ -30,7 +31,7 @@ actual fun VideoPlayer(
         }
 
         isVideoFile(url) -> {
-            HTMLMP4Player(modifier, videoURL = url,autoPlay)
+            HTMLMP4Player(modifier, videoURL = url,autoPlay, showControls)
         }
     }
 }
@@ -39,7 +40,8 @@ actual fun VideoPlayer(
 fun HTMLMP4Player(
     modifier: Modifier,
     videoURL: String,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -53,7 +55,7 @@ fun HTMLMP4Player(
                 video.setAttribute("width", "100%")
                 video.setAttribute("height", "100%")
                 video.setAttribute("src", videoURL)
-                video.setAttribute("controls", "true")
+                video.setAttribute("controls", "$showControls")
                 video.setAttribute("autoplay",autoPlay.toString())
                 video.addEventListener("loadeddata", {
                     println("Loading Video: false")
@@ -72,7 +74,8 @@ fun HTMLAudioPlayer(
     modifier: Modifier,
     audioURL: String,
     headers: Map<String, String>,
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     val audioBlobUrl = remember(audioURL, headers) {
         fetchAudioBlobUrl(audioURL, headers)
@@ -82,7 +85,7 @@ fun HTMLAudioPlayer(
         modifier = modifier.fillMaxSize(),
         factory = {
             val audio = createElement("audio")
-            audio.setAttribute("controls", "true")
+            audio.setAttribute("controls", "$showControls")
             if (audioBlobUrl != null) {
                 audio.setAttribute("src", audioBlobUrl)
             }
@@ -156,11 +159,12 @@ actual fun MediaPlayer(
     volumeIconColor: Color,
     playIconColor: Color,
     sliderTrackColor: Color,
-    sliderIndicatorColor: Color
+    sliderIndicatorColor: Color,
+    showControls: Boolean
 ) {
     when {
         isAudioFile(url) -> {
-            HTMLAudioPlayer(modifier, audioURL = url, autoPlay = autoPlay, headers = headers)
+            HTMLAudioPlayer(modifier, audioURL = url, autoPlay = autoPlay, headers = headers, showControls = showControls)
         }
     }
 }
