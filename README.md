@@ -209,5 +209,8 @@ We welcome contributions to the MediaPlayer-KMP Library Project! To contribute, 
 - **Suggesting Features**: We encourage you to suggest new features or improvements by opening an issue and describing your idea.
 - **Submitting Pull Requests**: If you'd like to contribute code, please fork the repository, create a new branch for your changes, and submit a pull request with a clear description of the changes.
 
+## Support Us:
+- We need your support for doing more open source contributions.  
+
 ## Code of Conduct
 We expect all contributors and users of the Alert-KMP Library Project to adhere to our code of conduct. Please review the [Code of Conduct](CODE_OF_CONDUCT.md) for details on expected behavior and reporting procedures.
