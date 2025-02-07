@@ -24,3 +24,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "multiplatform-library-template"
 include(":mediaplayer-kmp")
+include(":sample:composeApp")
+include(":sample:terminalApp")
