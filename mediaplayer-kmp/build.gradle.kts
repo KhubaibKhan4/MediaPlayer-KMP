@@ -96,7 +96,6 @@ kotlin {
                 implementation(compose.html.core)
             }
         }
-        val wasmJsMain by getting
     }
 }
 
