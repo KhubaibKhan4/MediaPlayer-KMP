@@ -1,5 +1,4 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -13,7 +12,7 @@ kotlin {
 
     androidTarget()
     jvm()
-    js  {
+    js(IR)  {
         moduleName = "composeApp"
         browser {
             commonWebpackConfig {
@@ -22,7 +21,6 @@ kotlin {
         }
         binaries.executable()
     }
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
         browser {
@@ -56,6 +54,9 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+        }
+        wasmJsMain.dependencies {
+
         }
 
     }

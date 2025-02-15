@@ -34,19 +34,19 @@ fun App() {
                 autoPlay = false
             )
 
-            MediaPlayer(
-                modifier = Modifier.fillMaxWidth(),
-                url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
-                startTime = Color.Black,
-                endTime = Color.Black,
-                volumeIconColor = Color.Black,
-                playIconColor = Color.Blue,
-                sliderTrackColor = Color.LightGray,
-                sliderIndicatorColor = Color.Blue,
-                showControls = true,
-                headers = mapOf("String" to ""),
-                autoPlay = false
-            )
+//            MediaPlayer(
+//                modifier = Modifier.fillMaxWidth(),
+//                url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
+//                startTime = Color.Black,
+//                endTime = Color.Black,
+//                volumeIconColor = Color.Black,
+//                playIconColor = Color.Blue,
+//                sliderTrackColor = Color.LightGray,
+//                sliderIndicatorColor = Color.Blue,
+//                showControls = true,
+//                headers = mapOf("String" to ""),
+//                autoPlay = false
+//            )
         }
     }
 }

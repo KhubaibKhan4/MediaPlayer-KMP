@@ -22,13 +22,22 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_1_8)
         }
     }
-    js {
-        browser()
+    js(IR)  {
+        moduleName = "composeApp"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "sampleApp.js"
+            }
+        }
         binaries.executable()
     }
-    @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
-        browser()
+        moduleName = "composeApp"
+        browser {
+            commonWebpackConfig {
+                outputFileName = "sampleApp.js"
+            }
+        }
         binaries.executable()
     }
     iosX64()
