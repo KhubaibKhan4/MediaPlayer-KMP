@@ -99,6 +99,22 @@ fun main() {
     )
 }
 ```
+### Play Local File
+
+To Play Local files, you just need to provide the file path.
+
+```groovy
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
+
+fun main() {
+   VideoPlayerScreen(
+                url = filePath,
+                autoPlay = false,
+                onInteraction = {},
+                showControls = true
+   )
+}
+```
 
 ## Audio Player Support
 
