@@ -3,10 +3,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
 import platform.AVFoundation.AVURLAsset
@@ -18,6 +21,7 @@ import platform.UIKit.NSLayoutConstraint
 import platform.UIKit.UIView
 import platform.WebKit.WKAudiovisualMediaTypes
 import platform.WebKit.WKWebView
+import kotlin.time.Duration.Companion.seconds
 
 @Composable
 actual fun VideoPlayer(
@@ -183,6 +187,7 @@ fun YouTubeIFramePlayer(
     autoPlay: Boolean,
     showControls: Boolean
 ) {
+    val scope = rememberCoroutineScope()
     val videoId = remember(url) {
         url.substringAfter("v=").substringBefore("&").ifEmpty { url.substringAfterLast("/") }
     }
@@ -192,6 +197,7 @@ fun YouTubeIFramePlayer(
     val htmlContent = """
         <html>
         <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
             <style>
                 body, html {
                     margin: 0;
@@ -214,32 +220,14 @@ fun YouTubeIFramePlayer(
                     border: none;
                 }
             </style>
-            <script>
-                function enableFullscreen() {
-                    var iframe = document.getElementById("youtubePlayer");
-                    if (iframe.requestFullscreen) {
-                        iframe.requestFullscreen();
-                    } else if (iframe.mozRequestFullScreen) { // Firefox
-                        iframe.mozRequestFullScreen();
-                    } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, and Opera
-                        iframe.webkitRequestFullscreen();
-                    } else if (iframe.msRequestFullscreen) { // IE/Edge
-                        iframe.msRequestFullscreen();
-                    }
-                }
-            </script>
         </head>
         <body>
             <div class="video-container">
                 <iframe 
                     id="youtubePlayer"
-                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls&playsinline=1" 
+                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls&playsinline=1&rel=0&modestbranding=1&fs=1&iv_load_policy=3" 
                     allow="autoplay; encrypted-media;"
-                    frameborder="0"
-                    allowfullscreen
-                    webkitallowfullscreen
-                    mozallowfullscreen
-                    onclick="enableFullscreen()">
+                    frameborder="0">
                 </iframe>
             </div>
         </body>
@@ -261,10 +249,9 @@ fun YouTubeIFramePlayer(
             .aspectRatio(16f / 9f),
         update = { view ->
             view.configuration.allowsInlineMediaPlayback = true
-        },
-        properties = UIKitInteropProperties(
-            isInteractive = true,
-            isNativeAccessibilityEnabled = true
-        )
+           scope.launch {
+                view.reload()
+            }
+        }
     )
 }
