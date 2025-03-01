@@ -89,7 +89,7 @@ actual fun VideoPlayer(
         url?.contains("youtube.com") == true || url?.contains("youtu.be") == true -> {
             val videoId = extractVideoId(url)
             if (videoId != null) {
-                YoutubeVideoPlayer(youtubeURL = url, autoPlay = autoPlay)
+                YoutubeVideoPlayer(youtubeURL = url, autoPlay = autoPlay, showControls = showControls)
             } else {
                 println("Video Id is Null or Invalid")
             }
@@ -217,7 +217,8 @@ fun YoutubeVideoPlayer(
     isPlaying: (Boolean) -> Unit = {},
     isLoading: (Boolean) -> Unit = {},
     onVideoEnded: () -> Unit = {},
-    autoPlay: Boolean
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     val mContext = LocalContext.current
     val mLifeCycleOwner = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -291,12 +292,12 @@ fun YoutubeVideoPlayer(
     }
 
     val playerBuilder = IFramePlayerOptions.Builder().apply {
-        controls(1)
+        controls(if(showControls) 0 else 1)
         fullscreen(1)
-        autoplay(if (autoPlay) 1 else 0)
+        autoplay(if (autoPlay) 0 else 1)
         modestBranding(1)
         ccLoadPolicy(1)
-        rel(0)
+        rel(1)
     }
 
     AndroidView(

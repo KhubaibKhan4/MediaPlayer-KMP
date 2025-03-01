@@ -1,6 +1,7 @@
 import com.vanniktech.maven.publish.SonatypeHost
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 
@@ -11,6 +12,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
     id("com.vanniktech.maven.publish") version "0.29.0"
     id("com.google.osdetector") version "1.7.3"
+    alias(libs.plugins.cocoapods)
 }
 
 kotlin {
@@ -43,6 +45,26 @@ kotlin {
     iosX64()
     iosArm64()
     iosSimulatorArm64()
+
+    cocoapods {
+        summary = "Some description for the Shared Module"
+        homepage = "Link to the Shared Module homepage"
+        version = "1.0"
+        ios.deploymentTarget = "13.0"
+       // podfile = project.file("../iosApp/Podfile")
+        framework {
+            isStatic = false
+        }
+
+        pod("YouTubePlayer") {
+            version = "0.7"
+            extraOpts += listOf("-compiler-option", "-fmodules")
+            // extraOpts += listOf("-compiler-option", "-DFB_SONARKIT_ENABLED=1")
+        }
+
+        xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
+        xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
+    }
 
 
     sourceSets {

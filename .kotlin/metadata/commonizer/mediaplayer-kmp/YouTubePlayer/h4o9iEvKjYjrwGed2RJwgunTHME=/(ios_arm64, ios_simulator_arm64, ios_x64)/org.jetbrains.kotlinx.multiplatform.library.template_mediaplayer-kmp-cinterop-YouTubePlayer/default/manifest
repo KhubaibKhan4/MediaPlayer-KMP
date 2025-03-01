@@ -1,0 +1,14 @@
+abi_version=1.201.0
+builtins_platform=NATIVE
+commonizer_native_targets=ios_arm64 ios_simulator_arm64 ios_x64
+commonizer_target=(ios_arm64, ios_simulator_arm64, ios_x64)
+compiler_version=2.1.10
+depends=org.jetbrains.kotlin.native.platform.CFCGTypes org.jetbrains.kotlin.native.platform.Foundation org.jetbrains.kotlin.native.platform.UIKit org.jetbrains.kotlin.native.platform.WebKit org.jetbrains.kotlin.native.platform.darwin org.jetbrains.kotlin.native.platform.posix stdlib
+exportForwardDeclarations=
+includedForwardDeclarations=objcnames.classes.CKShareMetadata objcnames.classes.NSPortMessage objcnames.classes.Protocol
+interop=true
+ir_signature_versions=1,2
+metadata_version=1.4.1
+native_targets=ios_arm64 ios_simulator_arm64 ios_x64
+package=cocoapods.YouTubePlayer
+unique_name=org.jetbrains.kotlinx.multiplatform.library.template\:mediaplayer-kmp-cinterop-YouTubePlayer
