@@ -190,6 +190,28 @@ fun MainScreen() {
 
 ```
 
+## Embed Content from Url:
+```
+val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
+val htmlEmbedFeature = HtmlEmbedFeature(viewer)
+
+htmlEmbedFeature.embedHtml(
+    url = "https://github.com/KhubaibKhan4/MediaPlayer-KMP/",
+    options = EmbedOptions(
+        customCss = "body { background-color: #f0f0f0; }",
+        onPageLoaded = { println("Page loaded successfully!") },
+        onError = { error -> println("Error loading page: $error") }
+    )
+)
+
+HtmlContentViewerView(
+    viewer = viewer,
+    modifier = Modifier
+        .fillMaxSize()
+)
+
+```
+
 ## 🤝 Connect with Me
 
 Let's chat about potential projects, job opportunities, or any other collaboration! Feel free to
