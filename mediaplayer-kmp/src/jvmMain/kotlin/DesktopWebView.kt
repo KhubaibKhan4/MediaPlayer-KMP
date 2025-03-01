@@ -82,53 +82,50 @@ private fun JFXPanel.buildWebView(
                 Worker.State.SUCCEEDED -> {
                     isLoading.value = false
 
-
                     val hideYouTubeUI = """
                         setTimeout(function() {
-                            // Hide YouTube overlays
-                            var overlaySelectors = [
-                                '.ytp-gradient-top', 
-                                '.ytp-gradient-bottom'
-                            ];
-                            overlaySelectors.forEach(function(selector) {
-                                var element = document.querySelector(selector);
-                                if (element !== null) {
-                                    element.style.display = 'none';
+                            var style = document.createElement('style');
+                            style.innerHTML = `
+                                /* Hide overlays, gradients, and unnecessary UI */
+                                .ytp-gradient-top, 
+                                .ytp-gradient-bottom, 
+                                .ytp-chrome-top, 
+                                .ytp-cards-button, 
+                                .ytp-title-text, 
+                                .ytp-watch-later-button, 
+                                .ytp-share-button, 
+                                .ytp-credits-roll, 
+                                .ytp-paid-content-overlay, 
+                                .ytp-show-cards-title, 
+                                #owner, 
+                                #info, 
+                                .ytp-ce-element, 
+                                .ytp-next-button {
+                                    display: none !important;
                                 }
-                            });
 
-                            // Hide YouTube logo, title, and eye icon
-                            var brandingSelectors = [
-                                '.ytp-chrome-top', // Top bar (title, logo)
-                                '.ytp-cards-button', // "i" button (eye icon)
-                                '.ytp-title-text', // Video title
-                                '.ytp-watch-later-button', // "Watch Later" button
-                                '.ytp-share-button', // "Share" button
-                                '.ytp-credits-roll', // Rolling credits
-                                '.ytp-paid-content-overlay', // Sponsored content
-                                '.ytp-show-cards-title', // Suggested videos title
-                                '#owner', // Channel name section
-                                '#info', // Views and upload date
-                                '.ytp-ce-element', // End screen recommendations
-                                '.ytp-next-button' // Next video button
-                            ];
-                            brandingSelectors.forEach(function(selector) {
-                                var element = document.querySelector(selector);
-                                if (element !== null) {
-                                    element.style.display = 'none';
+                                /* Make video fill the entire WebView */
+                                video {
+                                    position: absolute !important;
+                                    top: 0 !important;
+                                    left: 0 !important;
+                                    width: 100% !important;
+                                    height: 100% !important;
+                                    object-fit: cover !important;
                                 }
-                            });
-
-                            // Hide video info panel on pause
-                            var hideVideoInfo = function() {
-                                var videoInfoPanel = document.querySelector('.ytp-title');
-                                if (videoInfoPanel !== null) {
-                                    videoInfoPanel.style.display = 'none';
+                                
+                                /* Prevent UI shifts */
+                                body, html, #player {
+                                    margin: 0 !important;
+                                    padding: 0 !important;
+                                    width: 100% !important;
+                                    height: 100% !important;
+                                    overflow: hidden !important;
+                                    background-color: black !important;
                                 }
-                            };
-                            hideVideoInfo();
-                            document.addEventListener("pause", hideVideoInfo, true);
-                        }, 1000);
+                            `;
+                            document.head.appendChild(style);
+                        }, 500);
                     """.trimIndent()
 
                     webEngine.executeScript(hideYouTubeUI)
