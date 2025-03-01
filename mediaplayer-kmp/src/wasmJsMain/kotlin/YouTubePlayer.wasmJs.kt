@@ -1,24 +1,32 @@
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.HTMLAudioElement
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.HTMLIFrameElement
 import org.w3c.dom.HTMLScriptElement
 import org.w3c.dom.HTMLVideoElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import org.w3c.xhr.BLOB
@@ -160,22 +168,37 @@ actual fun MediaPlayer(
 @Composable
 fun HTMLVideoPlayer(
     videoId: String,
-    modifier: Modifier,
-    autoPlay: Boolean
+    modifier: Modifier = Modifier,
+    autoPlay: Boolean = false
 ) {
-    Column(
+    var isLoading by remember { mutableStateOf(true) }
+
+    Box(
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+                Image(
+                    painter = rememberAsyncImagePainter("https://img.youtube.com/vi/$videoId/hqdefault.jpg"),
+                    contentDescription = "Video Thumbnail",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
         HtmlView(
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(200.dp),
             factory = {
                 val iframe = document.createElement("iframe") as HTMLIFrameElement
                 iframe.apply {
                     width = "100%"
                     height = "100%"
-                    src = "https://www.youtube.com/embed/$videoId?autoplay=${if (autoPlay) 1 else 0}&mute=1&showinfo=0"
+                    src = "https://www.youtube.com/embed/$videoId?autoplay=${if (autoPlay) 1 else 0}&mute=1&modestbranding=1&rel=0&showinfo=0"
                     setAttribute("frameborder", "0")
                     setAttribute(
                         "allow",
@@ -186,10 +209,24 @@ fun HTMLVideoPlayer(
                 }
 
                 injectJavaScript(iframe, """
-                    setTimeout(function() {
-                        document.querySelector('.ytp-gradient-top')?.style.display = 'none';
-                        document.querySelector('.ytp-gradient-bottom')?.style.display = 'none';
-                    }, 1000);
+                    let checkIframeLoaded = setInterval(function() {
+                        let player = document.querySelector("iframe");
+                        if (player && player.contentWindow && player.contentWindow.document.readyState === "complete") {
+                            clearInterval(checkIframeLoaded);
+                            
+                            // Hide loading indicator (Communicate with Kotlin via JS bridge)
+                            window.dispatchEvent(new Event("iframeReady"));
+
+                            // ✅ Hide YouTube UI elements
+                            setTimeout(function() {
+                                document.querySelector('.ytp-gradient-top')?.style.display = 'none';
+                                document.querySelector('.ytp-gradient-bottom')?.style.display = 'none';
+                                document.querySelector('.ytp-chrome-top')?.style.display = 'none';
+                                document.querySelector('.ytp-watch-later-button')?.style.display = 'none';
+                                document.querySelector('.ytp-share-button')?.style.display = 'none';
+                            }, 1000);
+                        }
+                    }, 500);
                 """.trimIndent())
 
                 iframe
@@ -200,7 +237,22 @@ fun HTMLVideoPlayer(
             }
         )
     }
+    var listener : (Event) -> Unit = {}
+
+    LaunchedEffect(Unit) {
+         listener = {
+            isLoading = false
+        }
+        window.addEventListener("iframeReady", listener)
+
+    }
+    DisposableEffect(Unit){
+        onDispose {
+            window.removeEventListener("iframeReady", listener)
+        }
+    }
 }
+
 /**
  * Inject JavaScript into an iframe to customize YouTube UI.
  */

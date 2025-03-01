@@ -1,16 +1,24 @@
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import coil3.compose.rememberAsyncImagePainter
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.events.Event
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import org.w3c.xhr.BLOB
@@ -178,24 +186,39 @@ actual fun MediaPlayer(
 @Composable
 fun HTMLVideoPlayer(
     videoId: String,
-    modifier: Modifier,
-    autoPlay: Boolean,
-    showControls: Boolean
+    modifier: Modifier = Modifier,
+    autoPlay: Boolean = false,
+    showControls: Boolean = true
 ) {
-    Column(
+    var isLoading by remember { mutableStateOf(true) }
+
+    Box(
         modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        contentAlignment = Alignment.Center
     ) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+                Image(
+                    painter = rememberAsyncImagePainter("https://img.youtube.com/vi/$videoId/hqdefault.jpg"),
+                    contentDescription = "Video Thumbnail",
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+
         HtmlView(
-            modifier = modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(200.dp),
             factory = {
                 val iframe = createElement("iframe") as HTMLElement
                 iframe.setAttribute("width", "100%")
                 iframe.setAttribute("height", "100%")
                 iframe.setAttribute(
                     "src",
-                    "https://www.youtube.com/embed/$videoId?autoplay=${if (autoPlay) 1 else 0}&controls=${if (showControls) 1 else 0}&showinfo=0"
+                    "https://www.youtube.com/embed/$videoId?autoplay=${if (autoPlay) 1 else 0}&controls=${if (showControls) 1 else 0}&showinfo=0&modestbranding=1&rel=0"
                 )
                 iframe.setAttribute("frameborder", "0")
                 iframe.setAttribute(
@@ -204,6 +227,11 @@ fun HTMLVideoPlayer(
                 )
                 iframe.setAttribute("allowfullscreen", "true")
                 iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade")
+
+                iframe.asDynamic().onload = {
+                    isLoading = false
+                }
+
                 iframe
             },
             update = {

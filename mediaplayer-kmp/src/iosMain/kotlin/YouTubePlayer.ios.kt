@@ -194,6 +194,8 @@ fun YouTubeIFramePlayer(
     val isAutoPlay = if (autoPlay) 1 else 0
     val controls = if (showControls) 1 else 0
 
+    val thumbnailUrl = "https://img.youtube.com/vi/$videoId/hqdefault.jpg"
+
     val htmlContent = """
         <html>
         <head>
@@ -211,7 +213,7 @@ fun YouTubeIFramePlayer(
                     width: 100%;
                     height: 100%;
                 }
-                .video-container iframe {
+                .video-container iframe, .video-container img {
                     position: absolute;
                     top: 0;
                     left: 0;
@@ -219,13 +221,36 @@ fun YouTubeIFramePlayer(
                     height: 100%;
                     border: none;
                 }
+                #thumbnail {
+                    display: block;
+                    background-color: black;
+                }
+                #youtubePlayer {
+                    display: none;
+                }
             </style>
+            <script>
+                function onYouTubeIframeAPIReady() {
+                    var player = new YT.Player('youtubePlayer', {
+                        events: {
+                            'onStateChange': function(event) {
+                                if (event.data == YT.PlayerState.PLAYING) {
+                                    document.getElementById("thumbnail").style.display = "none";
+                                    document.getElementById("youtubePlayer").style.display = "block";
+                                }
+                            }
+                        }
+                    });
+                }
+            </script>
+            <script src="https://www.youtube.com/iframe_api"></script>
         </head>
         <body>
             <div class="video-container">
+                <img id="thumbnail" src="$thumbnailUrl" alt="Video thumbnail" />
                 <iframe 
                     id="youtubePlayer"
-                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls&playsinline=1&rel=0&modestbranding=1&fs=1&iv_load_policy=3" 
+                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls&playsinline=1&rel=0&modestbranding=1&fs=0&iv_load_policy=3&enablejsapi=1" 
                     allow="autoplay; encrypted-media;"
                     frameborder="0">
                 </iframe>

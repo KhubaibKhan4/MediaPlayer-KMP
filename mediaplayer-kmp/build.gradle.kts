@@ -76,6 +76,7 @@ kotlin {
                 implementation(compose.ui)
                 implementation(compose.materialIconsExtended)
                 implementation(libs.kotlinx.coroutines.core)
+                implementation("io.coil-kt.coil3:coil-compose:3.1.0")
             }
         }
         val commonTest by getting {
