@@ -287,12 +287,13 @@ fun YoutubeVideoPlayer(
     }
 
     val playerBuilder = IFramePlayerOptions.Builder().apply {
-        controls(if(showControls) 0 else 1)
+        controls(if (showControls) 1 else 0)
         fullscreen(1)
-        autoplay(if (autoPlay) 0 else 1)
+        autoplay(if (autoPlay) 1 else 0)
         modestBranding(1)
+        rel(0)
+        ivLoadPolicy(3)
         ccLoadPolicy(1)
-        rel(1)
     }
 
     AndroidView(
