@@ -1,8 +1,6 @@
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.pm.ActivityInfo
-import android.content.pm.ConfigurationInfo
-import android.content.res.Configuration
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -14,9 +12,7 @@ import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.annotation.OptIn
 import androidx.annotation.RequiresApi
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,8 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -36,24 +30,20 @@ import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.Lifecycle
@@ -76,8 +66,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.kotlinx.multiplatform.library.template.R
+import utils.findComponentActivity
 
-@RequiresApi(Build.VERSION_CODES.S)
 @Composable
 actual fun VideoPlayer(
     modifier: Modifier,
@@ -96,15 +86,20 @@ actual fun VideoPlayer(
         }
 
         isVideoFile(url) -> {
-            ExoPlayerVideoPlayer(videoURL = url!!, autoPlay = autoPlay, showControls = showControls)
+            ExoPlayerVideoPlayer(modifier = modifier, videoURL = url!!, autoPlay = autoPlay, showControls = showControls)
         }
     }
 }
 
 @OptIn(UnstableApi::class)
 @Composable
-fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean, showControls: Boolean) {
-    val context = LocalContext.current
+fun ExoPlayerVideoPlayer(
+    modifier: Modifier,
+    videoURL: String,
+    autoPlay: Boolean,
+    showControls: Boolean
+) {
+    val context = LocalContext.current.findComponentActivity()
     val activity = context as ComponentActivity
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     var isLoading by remember { mutableStateOf(true) }
@@ -130,7 +125,7 @@ fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean, showControls: Boole
         }
     }
 
-    Box(modifier = Modifier.fillMaxWidth()) {
+    Box(modifier = modifier) {
         AndroidView(
             factory = {
                 PlayerView(context).apply {
@@ -154,7 +149,7 @@ fun ExoPlayerVideoPlayer(videoURL: String,autoPlay: Boolean, showControls: Boole
                     })
                 }
             },
-            modifier = Modifier.fillMaxWidth(),
+            modifier = modifier,
             update = { view ->
                 view.player = exoPlayer
             },
@@ -301,8 +296,7 @@ fun YoutubeVideoPlayer(
     }
 
     AndroidView(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .background(Color.Black),
         factory = {
             playerFragment.apply {
@@ -406,9 +400,9 @@ fun ExoPlayerAudioPlayer(
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     var isPlayingAudio by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(true) }
-    var currentTime by remember { mutableStateOf(0f) }
-    var duration by remember { mutableStateOf(0f) }
-    var volume by remember { mutableStateOf(1f) }
+    var currentTime by remember { mutableFloatStateOf(0f) }
+    var duration by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    var volume by remember { mutableFloatStateOf(1f) }
 
     DisposableEffect(audioURL) {
         val dataSourceFactory = DefaultDataSource.Factory(context) {
@@ -559,7 +553,7 @@ actual fun MediaPlayer(
             sliderIndicatorColor = sliderIndicatorColor
         )
     } else {
-        ExoPlayerVideoPlayer(videoURL = url, autoPlay = autoPlay, showControls = showControls)
+        ExoPlayerVideoPlayer(modifier = modifier,videoURL = url, autoPlay = autoPlay, showControls = showControls)
     }
 }
 
