@@ -4,18 +4,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.browser.document
+import kotlinx.coroutines.suspendCancellableCoroutine
+import org.w3c.dom.HTMLAudioElement
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.HTMLIFrameElement
+import org.w3c.dom.HTMLScriptElement
+import org.w3c.dom.HTMLVideoElement
 import org.w3c.dom.url.URL
 import org.w3c.files.Blob
 import org.w3c.xhr.BLOB
 import org.w3c.xhr.XMLHttpRequest
 import org.w3c.xhr.XMLHttpRequestResponseType
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 @Composable
 actual fun VideoPlayer(
@@ -27,11 +37,10 @@ actual fun VideoPlayer(
     when {
         url.contains("youtube.com") || url.contains("youtu.be") -> {
             val videoId = extractVideoId(url)
-            HTMLVideoPlayer(videoId,modifier,autoPlay)
+            HTMLVideoPlayer(videoId, modifier, autoPlay)
         }
-
         isVideoFile(url) -> {
-            HTMLMP4Player(modifier, videoURL = url,autoPlay, showControls)
+            HTMLMP4Player(modifier, videoURL = url, autoPlay, showControls)
         }
     }
 }
@@ -51,17 +60,19 @@ fun HTMLMP4Player(
         HtmlView(
             modifier = Modifier.fillMaxWidth().height(300.dp),
             factory = {
-                val video = createElement("video")
-                video.setAttribute("width", "100%")
-                video.setAttribute("height", "100%")
-                video.setAttribute("src", videoURL)
-                video.setAttribute("controls", "$showControls")
-                video.setAttribute("autoplay",autoPlay.toString())
+                val video = document.createElement("video") as HTMLVideoElement
+                video.apply {
+                    width = 100
+                    height = 100
+                    src = videoURL
+                    controls = showControls
+                    autoplay = autoPlay
+                }
                 video.addEventListener("loadeddata", {
-                    println("Loading Video: false")
+                    println("Video Loaded: $videoURL")
                 })
                 video.addEventListener("loadstart", {
-                    println("Loading Video: true")
+                    println("Loading Video: $videoURL")
                 })
                 video
             }
@@ -77,75 +88,52 @@ fun HTMLAudioPlayer(
     autoPlay: Boolean,
     showControls: Boolean
 ) {
-    val audioBlobUrl = remember(audioURL, headers) {
+    val audioBlobUrl by remember(audioURL, headers) {
+        mutableStateOf("")
+    }
+    LaunchedEffect(Unit){
         fetchAudioBlobUrl(audioURL, headers)
     }
 
     HtmlView(
         modifier = modifier.fillMaxSize(),
         factory = {
-            val audio = createElement("audio")
-            audio.setAttribute("controls", "$showControls")
-            if (audioBlobUrl != null) {
-                audio.setAttribute("src", audioBlobUrl)
+            val audio = document.createElement("audio") as HTMLAudioElement
+            audio.apply {
+                controls = showControls
+                autoplay = autoPlay
+                src = audioBlobUrl ?: audioURL
             }
-            audio.setAttribute("autoplay", autoPlay.toString())
             audio
         }
     )
 }
 
 /**
- * Fetches the audio file as a Blob URL with custom headers
+ * Fetches the audio file as a Blob URL with custom headers asynchronously.
  */
-private fun fetchAudioBlobUrl(audioURL: String, headers: Map<String, String>): String? {
-    var blobUrl: String? = null
-    val xhr = XMLHttpRequest()
+private suspend fun fetchAudioBlobUrl(audioURL: String, headers: Map<String, String>): String? {
+    return suspendCancellableCoroutine { continuation ->
+        val xhr = XMLHttpRequest()
+        xhr.open("GET", audioURL, true)
+        headers.forEach { (key, value) -> xhr.setRequestHeader(key, value) }
+        xhr.responseType = XMLHttpRequestResponseType.BLOB
 
-    xhr.open("GET", audioURL, false)
-    headers.forEach { (key, value) ->
-        xhr.setRequestHeader(key, value)
-    }
-    xhr.responseType = XMLHttpRequestResponseType.BLOB
-
-    xhr.onload = {
-        if (xhr.status in 200..299) {
-            val blob = xhr.response as Blob
-            blobUrl = URL.createObjectURL(blob)
+        xhr.onload = {
+            if (xhr.status in 200..299) {
+                val blob = xhr.response as Blob
+                continuation.resume(URL.createObjectURL(blob))
+            } else {
+                continuation.resumeWithException(Exception("Failed to load audio: $audioURL"))
+            }
         }
+
+        xhr.onerror = {
+            continuation.resumeWithException(Exception("Network error fetching audio: $audioURL"))
+        }
+
+        xhr.send()
     }
-
-    xhr.onerror = {
-        error("Failed to load audio from $audioURL with headers: $headers")
-    }
-
-    xhr.send()
-
-    return blobUrl
-}
-
-
-fun isAudioFile(url: String?): Boolean {
-    return url?.matches(
-        Regex(".*\\.(mp3|wav|aac|ogg|m4a|m3u|pls|m3u8)\$", RegexOption.IGNORE_CASE)
-    ) == true || url?.matches(
-        Regex(".*(radio|stream|icecast|shoutcast|audio|listen).*", RegexOption.IGNORE_CASE)
-    ) == true
-}
-
-private fun extractVideoId(url: String): String {
-    val videoIdRegex =
-        Regex("""(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})""")
-    val matchResult = videoIdRegex.find(url)
-    return matchResult?.groupValues?.get(1) ?: "default_video_id"
-}
-
-fun isVideoFile(url: String?): Boolean {
-    return url?.matches(
-        Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg|m3u8|ts|dash)\$", RegexOption.IGNORE_CASE)
-    ) == true || url?.matches(
-        Regex(".*(stream|video|live|media).*", RegexOption.IGNORE_CASE)
-    ) == true
 }
 
 @Composable
@@ -183,37 +171,27 @@ fun HTMLVideoPlayer(
         HtmlView(
             modifier = modifier.fillMaxWidth(),
             factory = {
-                val iframe = createElement("iframe") as HTMLElement
-                iframe.setAttribute("width", "100%")
-                iframe.setAttribute("height", "100%")
-                iframe.setAttribute(
-                    "src",
-                    "https://www.youtube.com/embed/$videoId?autoplay=1&mute=1&showinfo=0"
-                )
-                iframe.setAttribute("frameborder", "0")
-                iframe.setAttribute(
-                    "allow",
-                    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                )
-                iframe.setAttribute("autoplay", autoPlay.toString())
-                iframe.setAttribute("allowfullscreen", "true")
-                iframe.setAttribute("referrerpolicy", "no-referrer-when-downgrade")
+                val iframe = document.createElement("iframe") as HTMLIFrameElement
+                iframe.apply {
+                    width = "100%"
+                    height = "100%"
+                    src = "https://www.youtube.com/embed/$videoId?autoplay=${if (autoPlay) 1 else 0}&mute=1&showinfo=0"
+                    setAttribute("frameborder", "0")
+                    setAttribute(
+                        "allow",
+                        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    )
+                    setAttribute("allowfullscreen", "true")
+                    setAttribute("referrerpolicy", "no-referrer-when-downgrade")
+                }
 
-                val script = """
+                injectJavaScript(iframe, """
                     setTimeout(function() {
-                        var overlaySelectors = [
-                            '.ytp-gradient-top',
-                            '.ytp-gradient-bottom'
-                        ];
-                        overlaySelectors.forEach(function(selector) {
-                            var element = document.querySelector(selector);
-                            if (element !== null) {
-                                element.style.display = 'none';
-                            }
-                        });
+                        document.querySelector('.ytp-gradient-top')?.style.display = 'none';
+                        document.querySelector('.ytp-gradient-bottom')?.style.display = 'none';
                     }, 1000);
-                """.trimIndent()
-                injectJavaScript(iframe, script)
+                """.trimIndent())
+
                 iframe
             },
             update = {
@@ -223,8 +201,28 @@ fun HTMLVideoPlayer(
         )
     }
 }
-private fun injectJavaScript(iframe: HTMLElement, script: String) {
-    val scriptElement = document.createElement("script") as HTMLElement
+/**
+ * Inject JavaScript into an iframe to customize YouTube UI.
+ */
+private fun injectJavaScript(iframe: HTMLIFrameElement, script: String) {
+    val scriptElement = document.createElement("script") as HTMLScriptElement
     scriptElement.textContent = script
     iframe.appendChild(scriptElement)
+}
+fun isVideoFile(url: String?): Boolean {
+    return url?.matches(
+        Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg|m3u8|ts|dash)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.contains("video", ignoreCase = true) == true
+}
+
+fun isAudioFile(url: String?): Boolean {
+    return url?.matches(
+        Regex(".*\\.(mp3|wav|aac|ogg|m4a|m3u8)\$", RegexOption.IGNORE_CASE)
+    ) == true || url?.contains("audio", ignoreCase = true) == true
+}
+
+private fun extractVideoId(url: String): String {
+    val videoIdRegex =
+        Regex("""(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})""")
+    return videoIdRegex.find(url)?.groupValues?.get(1) ?: "default_video_id"
 }

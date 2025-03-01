@@ -1,4 +1,3 @@
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
@@ -6,60 +5,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.interop.UIKitView
 import androidx.compose.ui.viewinterop.UIKitInteropProperties
 import androidx.compose.ui.viewinterop.UIKitView
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.cinterop.CValue
-import kotlinx.cinterop.CValues
-import kotlinx.cinterop.DoubleVar
-import kotlinx.cinterop.ExperimentalForeignApi
-import kotlinx.cinterop.cValuesOf
-import kotlinx.cinterop.convert
-import kotlinx.cinterop.memScoped
 import platform.AVFoundation.AVPlayer
 import platform.AVFoundation.AVPlayerItem
-import platform.AVFoundation.AVPlayerLayer
 import platform.AVFoundation.AVURLAsset
 import platform.AVFoundation.pause
 import platform.AVFoundation.play
 import platform.AVKit.AVPlayerViewController
-import platform.CoreGraphics.CGRect
-import platform.CoreGraphics.CGSize
-import platform.Foundation.NSIndexPath
 import platform.Foundation.NSURL
-import platform.QuartzCore.CATransaction
-import platform.QuartzCore.kCATransactionDisableActions
-import platform.UIKit.UICollectionView
-import platform.UIKit.UICollectionViewCell
-import platform.UIKit.UICollectionViewDataSourceProtocol
-import platform.UIKit.UICollectionViewFlowLayout
-import platform.UIKit.UICollectionViewScrollDirection
-import platform.*
-import platform.CoreGraphics.CGPoint
-import platform.CoreGraphics.CGRectGetMidX
-import platform.CoreGraphics.CGRectGetMidY
-import platform.Foundation.NSCoder
 import platform.UIKit.NSLayoutConstraint
-import platform.UIKit.UICollectionViewDelegateProtocol
-import platform.UIKit.UIColor.Companion.blackColor
-import platform.UIKit.UINib
-import platform.UIKit.UIScrollView
 import platform.UIKit.UIView
-import platform.UIKit.UIViewController
-import platform.UIKit.row
+import platform.WebKit.WKAudiovisualMediaTypes
 import platform.WebKit.WKWebView
-import platform.darwin.NSInteger
-import platform.darwin.NSObject
 
 @Composable
 actual fun VideoPlayer(
-    modifier: Modifier, url: String, autoPlay: Boolean, showControls: Boolean
+    modifier: Modifier,
+    url: String,
+    autoPlay: Boolean,
+    showControls: Boolean
 ) {
     if (url.contains("youtube.com") || url.contains("youtu.be")) {
-        YouTubeIFramePlayer(url = url, modifier = modifier,autoPlay = autoPlay, showControls = showControls)
+        YouTubeIFramePlayer(
+            url = url,
+            modifier = modifier,
+            autoPlay = autoPlay,
+            showControls = showControls
+        )
     } else if (isVideoFile(url) || isAudioFile(url)) {
-        AvPlayerView(modifier,url,autoPlay, showControls = showControls)
+        AvPlayerView(
+            modifier = modifier,
+            url = url,
+            autoPlay = autoPlay,
+            showControls = showControls)
     } else {
         Text("Unsupported media format", modifier = modifier)
     }
@@ -198,7 +177,12 @@ private fun createAVPlayerWithHeaders(url: String, headers: Map<String, String>)
 }
 
 @Composable
-fun YouTubeIFramePlayer(url: String, modifier: Modifier, autoPlay: Boolean, showControls: Boolean) {
+fun YouTubeIFramePlayer(
+    url: String,
+    modifier: Modifier,
+    autoPlay: Boolean,
+    showControls: Boolean
+) {
     val videoId = remember(url) {
         url.substringAfter("v=").substringBefore("&").ifEmpty { url.substringAfterLast("/") }
     }
@@ -214,6 +198,7 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier, autoPlay: Boolean, show
                     padding: 0;
                     height: 100%;
                     overflow: hidden;
+                    background-color: black;
                 }
                 .video-container {
                     position: relative;
@@ -229,13 +214,32 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier, autoPlay: Boolean, show
                     border: none;
                 }
             </style>
+            <script>
+                function enableFullscreen() {
+                    var iframe = document.getElementById("youtubePlayer");
+                    if (iframe.requestFullscreen) {
+                        iframe.requestFullscreen();
+                    } else if (iframe.mozRequestFullScreen) { // Firefox
+                        iframe.mozRequestFullScreen();
+                    } else if (iframe.webkitRequestFullscreen) { // Chrome, Safari, and Opera
+                        iframe.webkitRequestFullscreen();
+                    } else if (iframe.msRequestFullscreen) { // IE/Edge
+                        iframe.msRequestFullscreen();
+                    }
+                }
+            </script>
         </head>
         <body>
             <div class="video-container">
                 <iframe 
-                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls" 
-                    allow="autoplay;"
-                    frameborder="0">
+                    id="youtubePlayer"
+                    src="https://www.youtube.com/embed/$videoId?autoplay=$isAutoPlay&controls=$controls&playsinline=1" 
+                    allow="autoplay; encrypted-media;"
+                    frameborder="0"
+                    allowfullscreen
+                    webkitallowfullscreen
+                    mozallowfullscreen
+                    onclick="enableFullscreen()">
                 </iframe>
             </div>
         </body>
@@ -244,16 +248,19 @@ fun YouTubeIFramePlayer(url: String, modifier: Modifier, autoPlay: Boolean, show
 
     UIKitView<WKWebView>(
         factory = {
-            val webView = WKWebView()
-            webView.scrollView.scrollEnabled = false
-            webView.loadHTMLString(htmlContent, baseURL = null)
+            val webView = WKWebView().apply {
+                scrollView.scrollEnabled = false
+                configuration.allowsInlineMediaPlayback = true
+                configuration.mediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.MAX_VALUE
+                loadHTMLString(htmlContent, baseURL = null)
+            }
             webView
         },
         modifier = modifier
             .fillMaxWidth()
             .aspectRatio(16f / 9f),
         update = { view ->
-
+            view.configuration.allowsInlineMediaPlayback = true
         },
         properties = UIKitInteropProperties(
             isInteractive = true,
