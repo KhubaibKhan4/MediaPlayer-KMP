@@ -55,9 +55,6 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
         }
-        wasmJsMain.dependencies {
-            implementation("org.jetbrains.compose.web:web-core:1.2.0")
-        }
 
     }
 }

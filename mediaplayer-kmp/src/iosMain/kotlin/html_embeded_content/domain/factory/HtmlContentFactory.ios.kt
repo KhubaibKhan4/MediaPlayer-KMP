@@ -23,7 +23,10 @@ actual class HtmlContentViewerFactory actual constructor() {
 
 class IOSHtmlContentViewer : HtmlContentViewer {
     @OptIn(ExperimentalForeignApi::class)
-    val webView: WKWebView = WKWebView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0), configuration = WKWebViewConfiguration())
+    val webView: WKWebView = WKWebView(
+        frame = CGRectMake(0.0, 0.0, 0.0, 0.0),
+        configuration = WKWebViewConfiguration()
+    )
     private var pageLoadCallback: Callback = {}
     private var errorCallback: (Throwable) -> Unit = {}
 
@@ -31,13 +34,11 @@ class IOSHtmlContentViewer : HtmlContentViewer {
         webView.navigationDelegate = object : NSObject(), WKNavigationDelegateProtocol {
             override fun webView(
                 webView: WKWebView,
-                didFailNavigation: WKNavigation?,
+                didFailProvisionalNavigation: WKNavigation?,
                 withError: NSError
             ) {
-                super.webView(webView, didFailNavigation, withError)
                 errorCallback(Exception(withError.localizedDescription))
             }
-
 
             override fun webView(
                 webView: WKWebView,
@@ -45,12 +46,6 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 preferences: WKWebpagePreferences,
                 decisionHandler: (WKNavigationActionPolicy, WKWebpagePreferences?) -> Unit
             ) {
-                super.webView(
-                    webView,
-                    decidePolicyForNavigationAction,
-                    preferences,
-                    decisionHandler
-                )
                 decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow, preferences)
             }
 
@@ -59,7 +54,6 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 didReceiveAuthenticationChallenge: NSURLAuthenticationChallenge,
                 completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Unit
             ) {
-                super.webView(webView, didReceiveAuthenticationChallenge, completionHandler)
                 completionHandler(NSURLSessionAuthChallengePerformDefaultHandling, null)
             }
 
@@ -68,7 +62,7 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 decidePolicyForNavigationResponse: WKNavigationResponse,
                 decisionHandler: (WKNavigationResponsePolicy) -> Unit
             ) {
-                super.webView(webView, decidePolicyForNavigationResponse, decisionHandler)
+                decisionHandler(WKNavigationResponsePolicy.WKNavigationResponsePolicyAllow)
             }
 
             override fun webView(
@@ -76,7 +70,7 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 decidePolicyForNavigationAction: WKNavigationAction,
                 decisionHandler: (WKNavigationActionPolicy) -> Unit
             ) {
-                super.webView(webView, decidePolicyForNavigationAction, decisionHandler)
+                decisionHandler(WKNavigationActionPolicy.WKNavigationActionPolicyAllow)
             }
 
             override fun webView(
@@ -84,7 +78,7 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 navigationAction: WKNavigationAction,
                 didBecomeDownload: WKDownload
             ) {
-                super.webView(webView, navigationAction, didBecomeDownload)
+                // Optionally implement download handling.
             }
 
             override fun webView(
@@ -92,7 +86,7 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 navigationResponse: WKNavigationResponse,
                 didBecomeDownload: WKDownload
             ) {
-                super.webView(webView, navigationResponse, didBecomeDownload)
+                // Optionally implement download handling.
             }
 
             override fun webView(
@@ -100,12 +94,10 @@ class IOSHtmlContentViewer : HtmlContentViewer {
                 authenticationChallenge: NSURLAuthenticationChallenge,
                 shouldAllowDeprecatedTLS: (Boolean) -> Unit
             ) {
-                super.webView(webView, authenticationChallenge, shouldAllowDeprecatedTLS)
                 shouldAllowDeprecatedTLS(false)
             }
 
             override fun webViewWebContentProcessDidTerminate(webView: WKWebView) {
-                super.webViewWebContentProcessDidTerminate(webView)
                 errorCallback(Exception("Web content process terminated"))
             }
         }
