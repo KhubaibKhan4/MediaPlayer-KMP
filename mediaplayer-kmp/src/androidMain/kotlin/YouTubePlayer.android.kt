@@ -1,5 +1,6 @@
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Context
 import android.content.pm.ActivityInfo
 import android.os.Build
 import android.os.Handler
@@ -60,6 +61,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.PlayerView
 import coil3.compose.rememberAsyncImagePainter
+import com.mediaplayer.kmp.AppContext
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.PlayerConstants
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
 import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.FullscreenListener
@@ -103,8 +105,7 @@ fun ExoPlayerVideoPlayer(
     autoPlay: Boolean,
     showControls: Boolean
 ) {
-    val context = LocalContext.current.findComponentActivity()
-    val activity = context as ComponentActivity
+    val context = AppContext.get()
     val exoPlayer = remember { ExoPlayer.Builder(context).build() }
     var isLoading by remember { mutableStateOf(true) }
     var isFullScreen by remember { mutableStateOf(false) }
@@ -146,7 +147,7 @@ fun ExoPlayerVideoPlayer(
                             if (visibility == View.VISIBLE) {
                                 findViewById<View>(R.drawable.baseline_fullscreen_24)?.setOnClickListener {
                                     isFullScreen = !isFullScreen
-                                    handleFullScreen(activity, isFullScreen)
+                                    handleFullScreen(context, isFullScreen)
                                 }
                             }
                         }
@@ -170,9 +171,9 @@ fun ExoPlayerVideoPlayer(
     }
 }
 
-fun handleFullScreen(activity: ComponentActivity, isFullScreen: Boolean) {
+fun handleFullScreen(activity: Context, isFullScreen: Boolean) {
     if (isFullScreen) {
-        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+        (activity as Activity).requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowInsetsController = activity.window.insetsController
@@ -188,7 +189,7 @@ fun handleFullScreen(activity: ComponentActivity, isFullScreen: Boolean) {
                         View.SYSTEM_UI_FLAG_FULLSCREEN
         }
     } else {
-        activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+        (activity as Activity).requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowInsetsController = activity.window.insetsController
