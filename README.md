@@ -237,8 +237,12 @@ connect with me through the following channels:
 | ![Screenshot 2024-07-10 153852](https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/1238c26b-8553-459d-b606-7da89459eb04) |
 | ![Screenshot 2024-07-10 153944](https://github.com/KhubaibKhan4/MediaPlayer-KMP/assets/98816544/2bd8bd9e-298c-4488-8348-8f94b6705a66) |
 
-## Embeded Content Support
-| ![Screenshot 1](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/android.png) | ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/desktop.png)                              |
+## Embedded Content Support
+
+| Mobile  | Desktop  |
+|---------|---------|
+| ![Screenshot 1](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/android.png) | ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/desktop.png) |
+                           |
 
 ## Demo
 
