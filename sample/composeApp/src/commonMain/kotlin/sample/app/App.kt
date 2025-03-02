@@ -54,9 +54,7 @@ fun App() {
 
 
             val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
-
             val htmlEmbedFeature = HtmlEmbedFeature(viewer)
-
             htmlEmbedFeature.embedHtml(
                 url = "https://github.com/KhubaibKhan4/MediaPlayer-KMP/",
                 options = EmbedOptions(
@@ -65,7 +63,6 @@ fun App() {
                     onError = { error -> println("Error loading page: $error") }
                 )
             )
-
             HtmlContentViewerView(
                 viewer = viewer,
                 modifier = Modifier
