@@ -242,7 +242,7 @@ connect with me through the following channels:
 | Mobile  | Desktop  |
 |---------|---------|
 | ![Screenshot 1](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/android.png) | ![Screenshot 2](https://github.com/KhubaibKhan4/MediaPlayer-KMP/blob/master/assests/screenshots/desktop.png) |
-                           |
+                           
 
 ## Demo
 
