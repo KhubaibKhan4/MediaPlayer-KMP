@@ -64,7 +64,7 @@ fun MainScree(modifier: Modifier = Modifier) {
                         .height(340.dp)
                         .aspectRatio(16/9f)
                     ,
-                    url = "https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4",
+                    url = "https://www.youtube.com/watch?v=AD2nEllUMJw",
                     showControls = true,
                     autoPlay = false
                 )
