@@ -6,12 +6,14 @@
 ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/KhubaibKhan4/MediaPlayer-KMP)
 ![GitHub Last Commit](https://img.shields.io/github/last-commit/KhubaibKhan4/MediaPlayer-KMP)
 ![GitHub Stars](https://img.shields.io/github/stars/KhubaibKhan4/MediaPlayer-KMP?style=social)
+![SavePalestine](https://raw.githubusercontent.com/OneDroid/.github/refs/heads/main/images/badge/save-palestine.svg)
 
 ![Supported Platforms](https://img.shields.io/badge/platform-Android-green.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-iOS-blue.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-JS-yellow.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-JVM-red.svg)
 ![Supported Platforms](https://img.shields.io/badge/platform-WASMJS-blue.svg)
+
 <img src="https://img.shields.io/liberapay/patrons/KhubaibKhanDev.svg?logo=liberapay">
 </br>
 <a href='https://ko-fi.com/Y8Y2YABZ7' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
