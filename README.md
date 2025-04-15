@@ -290,6 +290,6 @@ guidelines:
 
 ## Code of Conduct
 
-We expect all contributors and users of the Alert-KMP Library Project to adhere to our code of
+We expect all contributors and users of the MediaPlayer-KMP Library Project to adhere to our code of
 conduct. Please review the [Code of Conduct](CODE_OF_CONDUCT.md) for details on expected behavior
 and reporting procedures.
