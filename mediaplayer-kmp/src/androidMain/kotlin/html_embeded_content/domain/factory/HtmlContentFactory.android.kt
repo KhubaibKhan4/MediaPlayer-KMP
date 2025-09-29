@@ -63,4 +63,10 @@ class AndroidHtmlContentViewer(private val context: Context) : HtmlContentViewer
     override fun setErrorListener(callback: (Throwable) -> Unit) {
         errorCallback = callback
     }
+
+    override fun evaluateJavaScript(script: String, callback: ((String?) -> Unit)?) {
+        webView.evaluateJavascript(script) { result ->
+            callback?.invoke(result)
+        }
+    }
 }

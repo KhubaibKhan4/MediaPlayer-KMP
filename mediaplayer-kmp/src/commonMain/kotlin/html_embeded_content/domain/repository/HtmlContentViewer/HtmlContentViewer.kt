@@ -9,4 +9,5 @@ interface HtmlContentViewer {
     fun injectCustomStyle(css: String)
     fun setPageLoadListener(callback: Callback)
     fun setErrorListener(callback: (Throwable) -> Unit)
+    fun evaluateJavaScript(script: String, callback: ((String?) -> Unit)? = null)
 }

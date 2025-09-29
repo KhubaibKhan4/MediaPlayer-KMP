@@ -81,4 +81,14 @@ class JvmHtmlContentViewer : HtmlContentViewer {
             }
         }
     }
+    override fun evaluateJavaScript(script: String, callback: ((String?) -> Unit)?) {
+        Platform.runLater {
+            try {
+                val result = engine.executeScript(script)
+                callback?.invoke(result?.toString())
+            } catch (e: Exception) {
+                callback?.invoke(null)
+            }
+        }
+    }
 }

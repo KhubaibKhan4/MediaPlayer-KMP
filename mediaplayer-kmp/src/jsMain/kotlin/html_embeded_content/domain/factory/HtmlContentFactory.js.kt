@@ -50,4 +50,8 @@ class JsHtmlContentViewer : HtmlContentViewer {
             null
         }
     }
+    override fun evaluateJavaScript(script: String, callback: ((String?) -> Unit)?) {
+        val result: dynamic = js("eval(script)")
+        callback?.invoke(result?.toString())
+    }
 }

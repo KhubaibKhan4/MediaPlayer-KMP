@@ -51,4 +51,14 @@ class JsHtmlContentViewer : HtmlContentViewer {
             null
         }
     }
+    override fun evaluateJavaScript(script: String, callback: ((String?) -> Unit)?) {
+        try {
+            val result = jsEval(script)
+            callback?.invoke(result?.toString())
+        } catch (e: Throwable) {
+            callback?.invoke(null)
+        }
+    }
 }
+@JsFun("function(script) { return eval(script); }")
+external fun jsEval(script: String): Any?
