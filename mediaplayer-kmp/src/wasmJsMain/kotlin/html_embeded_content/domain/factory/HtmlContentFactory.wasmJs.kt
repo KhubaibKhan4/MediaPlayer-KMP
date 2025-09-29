@@ -61,4 +61,4 @@ class JsHtmlContentViewer : HtmlContentViewer {
     }
 }
 @JsFun("function(script) { return eval(script); }")
-external fun jsEval(script: String): Any?
+external fun jsEval(script: String): JsAny?
