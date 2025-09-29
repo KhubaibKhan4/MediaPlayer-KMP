@@ -214,6 +214,19 @@ HtmlContentViewerView(
 
 ```
 
+### JavaScript execution + element querying
+```
+val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
+
+viewer.loadUrl("https://example.com")
+viewer.setPageLoadListener {
+    viewer.evaluateJavaScript("document.title") { title ->
+        println("Page title: $title")
+    }
+}
+
+```
+
 ## 🤝 Connect with Me
 
 Let's chat about potential projects, job opportunities, or any other collaboration! Feel free to
