@@ -222,11 +222,14 @@ fun handleFullScreen(activity: Context, isFullScreen: Boolean) {
 }
 
 fun isVideoFile(url: String?): Boolean {
-    return url?.matches(
-        Regex(".*\\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg|m3u8|ts|dash)\$", RegexOption.IGNORE_CASE)
-    ) == true || url?.matches(
-        Regex(".*(stream|video|live|media).*", RegexOption.IGNORE_CASE)
-    ) == true
+    if (url.isNullOrBlank()) return false
+
+    val fileRegex = Regex(
+        pattern = """.*\.(mp4|mkv|webm|avi|mov|wmv|flv|m4v|3gp|mpeg|mpg|ogv|ogg|mts|m2ts|vob|f4v|mxf|rm|rmvb|asf|divx|mpe|mpv|ts|m3u8|dash)$""",
+        option = RegexOption.IGNORE_CASE
+    )
+
+    return url.matches(fileRegex)
 }
 @Composable
 fun YoutubeVideoPlayer(
