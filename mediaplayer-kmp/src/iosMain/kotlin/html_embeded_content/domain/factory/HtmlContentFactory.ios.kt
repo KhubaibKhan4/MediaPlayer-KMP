@@ -125,4 +125,14 @@ class IOSHtmlContentViewer : HtmlContentViewer {
     override fun setErrorListener(callback: (Throwable) -> Unit) {
         errorCallback = callback
     }
+
+    override fun evaluateJavaScript(script: String, callback: ((String?) -> Unit)?) {
+        webView.evaluateJavaScript(script) { result, error ->
+            if (error != null) {
+                callback?.invoke(null)
+            } else {
+                callback?.invoke(result?.toString())
+            }
+        }
+    }
 }
