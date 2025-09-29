@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -24,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import html_embeded_content.data.EmbedOptions
 import html_embeded_content.domain.factory.HtmlContentViewerFactory
 import html_embeded_content.domain.factory.HtmlEmbedFeature
@@ -39,8 +42,65 @@ fun App() {
 @Composable
 fun MainScree(modifier: Modifier = Modifier) {
     var isMedia by remember { mutableStateOf(false) }
+    var isDialogMedia by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
     val coroutineScope = rememberCoroutineScope()
+
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color.White),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Button(onClick = {
+                isDialogMedia = !isDialogMedia
+                coroutineScope.launch { sheetState.show() }
+            }) {
+                Text("Open Dialog Video Player")
+            }
+
+            Button(onClick = {
+                isMedia = !isMedia
+                coroutineScope.launch { sheetState.show() }
+            }) {
+                Text("Open Bottom Sheet Video Player")
+            }
+
+            val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
+            val htmlEmbedFeature = HtmlEmbedFeature(viewer)
+            htmlEmbedFeature.embedHtml(
+                url = "https://github.com/KhubaibKhan4/MediaPlayer-KMP/",
+                options = EmbedOptions(
+                    customCss = "body { background-color: #f0f0f0; }",
+                    onPageLoaded = { println("Page loaded successfully!") },
+                    onError = { error -> println("Error loading page: $error") }
+                )
+            )
+
+            HtmlContentViewerView(
+                viewer = viewer,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+
+    if(isDialogMedia){
+        BasicAlertDialog(
+            onDismissRequest = {
+                isDialogMedia = !isDialogMedia
+            },
+            properties = DialogProperties(),
+            content = {
+                VideoPlayer(
+                    modifier = Modifier.fillMaxWidth(),
+                    url = "https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4",
+                    showControls = true,
+                    autoPlay = true
+                )
+            })
+    }
 
     if(isMedia){
         ModalBottomSheet(
@@ -70,38 +130,6 @@ fun MainScree(modifier: Modifier = Modifier) {
                 )
             }
 
-        }
-    }
-
-    Box(
-        modifier = Modifier.fillMaxSize().background(Color.White),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Button(onClick = {
-                isMedia = !isMedia
-                coroutineScope.launch { sheetState.show() }
-            }) {
-                Text("Open Video Player")
-            }
-
-            val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
-            val htmlEmbedFeature = HtmlEmbedFeature(viewer)
-            htmlEmbedFeature.embedHtml(
-                url = "https://github.com/KhubaibKhan4/MediaPlayer-KMP/",
-                options = EmbedOptions(
-                    customCss = "body { background-color: #f0f0f0; }",
-                    onPageLoaded = { println("Page loaded successfully!") },
-                    onError = { error -> println("Error loading page: $error") }
-                )
-            )
-
-            HtmlContentViewerView(
-                viewer = viewer,
-                modifier = Modifier.fillMaxSize()
-            )
         }
     }
 }
