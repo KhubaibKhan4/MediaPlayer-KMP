@@ -10,7 +10,7 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.compose)
     alias(libs.plugins.compose.compiler)
-    id("com.vanniktech.maven.publish") version "0.29.0"
+    id("com.vanniktech.maven.publish") version "0.30.0"
     id("com.google.osdetector") version "1.7.3"
     alias(libs.plugins.cocoapods)
 }
