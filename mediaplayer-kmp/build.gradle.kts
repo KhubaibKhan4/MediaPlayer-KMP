@@ -141,7 +141,8 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "2.2.0"
+        // CI passes -PlibraryVersion=<tag> when publishing a release.
+        version = (project.findProperty("libraryVersion") as String?) ?: "2.2.0"
     )
 
     pom {
@@ -170,7 +171,7 @@ mavenPublishing {
         }
     }
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
 
     signAllPublications()
 }

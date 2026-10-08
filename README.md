@@ -369,6 +369,20 @@ Browsers block autoplay with sound, so YouTube videos with `autoPlay = true` sta
 For iOS, open the sample in Xcode (or use the Kotlin Multiplatform plugin in Android Studio) and run
 it on a simulator.
 
+## Releasing (maintainers)
+
+Publishing to Maven Central is automated by [`.github/workflows/publish.yml`](.github/workflows/publish.yml).
+
+1. One-time setup: add these repository secrets under **Settings → Secrets and variables → Actions**:
+   `MAVEN_CENTRAL_USERNAME` and `MAVEN_CENTRAL_PASSWORD` (a Central Portal user token from
+   central.sonatype.com → Account → Generate User Token), `SIGNING_KEY` (output of
+   `gpg --armor --export-secret-keys <KEY_ID>`), `SIGNING_KEY_ID` (last 8 characters of the key id)
+   and `SIGNING_PASSWORD`.
+2. Create a GitHub Release with a tag like `v2.3.0`. Publishing the release builds, tests, signs and
+   releases version `2.3.0` to Maven Central. A failed run can be re-run from the Actions tab, or
+   started manually with **Run workflow** and an explicit version.
+3. Update the version in the Installation section of this README.
+
 ## Future Plans
 
 - Player controller API (play, pause, seek and position from code).
