@@ -4,7 +4,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
-
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidLibrary)
@@ -15,8 +14,25 @@ plugins {
     alias(libs.plugins.cocoapods)
 }
 
+val javaFxVersion = "19"
+
+fun com.google.gradle.osdetector.OsDetector.javaFxClassifier(): String = when (classifier) {
+    "linux-x86_64" -> "linux"
+    "linux-aarch_64" -> "linux-aarch64"
+    "windows-x86_64" -> "win"
+    "osx-x86_64" -> "mac"
+    "osx-aarch_64" -> "mac-aarch64"
+    else -> throw IllegalStateException("Unknown OS: $classifier")
+}
+
 kotlin {
-    jvm()
+    jvm {
+        // Keep the published bytecode loadable on JDK 17 even when the library is built with a newer JDK.
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
     androidTarget {
         publishLibraryVariants("release")
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -56,12 +72,6 @@ kotlin {
             isStatic = false
         }
 
-        pod("YouTubePlayer") {
-            version = "0.7"
-            extraOpts += listOf("-compiler-option", "-fmodules")
-            // extraOpts += listOf("-compiler-option", "-DFB_SONARKIT_ENABLED=1")
-        }
-
         xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
     }
@@ -95,31 +105,20 @@ kotlin {
                 implementation(compose.ui)
                 implementation(libs.androidx.media3.exoplayer)
                 implementation(libs.androidx.media3.exoplayer.dash)
+                implementation(libs.androidx.media3.exoplayer.hls)
                 implementation(libs.androidx.media3.ui)
-                implementation(libs.androidx.media3.session)
-                implementation(libs.jetbrains.kotlinx.serialization.json)
-                implementation(libs.kotlinx.serialization.core)
                 implementation(libs.kotlinx.coroutines.android)
             }
         }
         val jvmMain by getting {
             dependencies {
                 implementation(compose.desktop.common)
-                implementation(compose.desktop.currentOs)
-                val fxSuffix = when (osdetector.classifier) {
-                    "linux-x86_64" -> "linux"
-                    "linux-aarch_64" -> "linux-aarch64"
-                    "windows-x86_64" -> "win"
-                    "osx-x86_64" -> "mac"
-                    "osx-aarch_64" -> "mac-aarch64"
-                    else -> throw IllegalStateException("Unknown OS: ${osdetector.classifier}")
+                // JavaFX ships per-OS native jars. Resolving them here would pin the publisher's OS
+                // into the POM (2.1.0 shipped mac-aarch64 natives to every Linux/Windows user), so
+                // the library only compiles against JavaFX and the app supplies the right natives.
+                listOf("base", "graphics", "controls", "swing", "web", "media").forEach {
+                    compileOnly("org.openjfx:javafx-$it:$javaFxVersion:${osdetector.javaFxClassifier()}")
                 }
-                implementation("org.openjfx:javafx-base:19:${fxSuffix}")
-                implementation("org.openjfx:javafx-graphics:19:${fxSuffix}")
-                implementation("org.openjfx:javafx-controls:19:${fxSuffix}")
-                implementation("org.openjfx:javafx-swing:19:${fxSuffix}")
-                implementation("org.openjfx:javafx-web:19:${fxSuffix}")
-                implementation("org.openjfx:javafx-media:19:${fxSuffix}")
                 implementation(libs.kotlinx.coroutines.swing)
             }
         }
@@ -142,7 +141,8 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.khubaibkhan4",
         artifactId = "mediaplayer-kmp",
-        version = "2.1.0"
+        // CI passes -PlibraryVersion=<tag> when publishing a release.
+        version = (project.findProperty("libraryVersion") as String?) ?: "2.2.0"
     )
 
     pom {
@@ -171,7 +171,7 @@ mavenPublishing {
         }
     }
 
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
 
     signAllPublications()
 }

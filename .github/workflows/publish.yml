@@ -1,0 +1,90 @@
+# Publishes mediaplayer-kmp to Maven Central.
+#
+# Runs when a GitHub Release is published (tag "v2.2.0" publishes version 2.2.0),
+# or manually from the Actions tab with an explicit version.
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   MAVEN_CENTRAL_USERNAME  Central Portal user token name   (central.sonatype.com → Account → Generate User Token)
+#   MAVEN_CENTRAL_PASSWORD  Central Portal user token password
+#   SIGNING_KEY             ASCII-armored private GPG key    (gpg --armor --export-secret-keys <KEY_ID>)
+#   SIGNING_KEY_ID          Last 8 characters of the GPG key id
+#   SIGNING_PASSWORD        Passphrase of the GPG key
+
+name: Publish to Maven Central
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish, e.g. 2.2.0"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # macOS is required to build and publish the iOS artifacts.
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION="${INPUT_VERSION:-${TAG#v}}"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-.][0-9A-Za-z.]+)?$ ]]; then
+            echo "::error::'$VERSION' is not a valid version. Use a tag like v2.2.0."
+            exit 1
+          fi
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Publishing version $VERSION"
+
+      - name: Check secrets
+        env:
+          MAVEN_CENTRAL_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_CENTRAL_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_KEY_ID: ${{ secrets.SIGNING_KEY_ID }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        run: |
+          missing=0
+          for name in MAVEN_CENTRAL_USERNAME MAVEN_CENTRAL_PASSWORD SIGNING_KEY SIGNING_KEY_ID SIGNING_PASSWORD; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Repository secret $name is not set (see the top of publish.yml)."
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Test
+        run: ./gradlew :mediaplayer-kmp:jvmTest :mediaplayer-kmp:testDebugUnitTest --no-configuration-cache
+
+      - name: Publish and release
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+        run: >
+          ./gradlew :mediaplayer-kmp:publishAndReleaseToMavenCentral
+          -PlibraryVersion=${{ steps.version.outputs.value }}
+          --no-configuration-cache

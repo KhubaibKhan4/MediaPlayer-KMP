@@ -1,6 +1,6 @@
 package html_embeded_content.presentation
 
-import HtmlView
+import io.github.khubaibkhan4.mediaplayer.HtmlView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import html_embeded_content.domain.factory.JsHtmlContentViewer

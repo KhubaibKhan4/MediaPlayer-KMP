@@ -1,3 +1,5 @@
+package io.github.khubaibkhan4.mediaplayer
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -23,7 +25,7 @@ import org.w3c.dom.Document
 import org.w3c.dom.Element
 
 
-val NoOpUpdate: Element.() -> Unit = {}
+internal val NoOpUpdate: Element.() -> Unit = {}
 
 private class ComponentInfo<T : Element> {
     lateinit var container: Element
@@ -123,7 +125,7 @@ private fun changeCoordinates(element: Element,width: Float,height: Float,x: Flo
 
 
 @Composable
-fun <T : Element> HtmlView(
+internal fun <T : Element> HtmlView(
     factory: Document.() -> T,
     modifier: Modifier = Modifier,
     update: (T) -> Unit = NoOpUpdate
@@ -212,6 +214,6 @@ private class Updater<T : Element>(
 }
 
 val LocalLayerContainer = staticCompositionLocalOf<Element> {
-    error("CompositionLocal LayerContainer not provided")
-    // you can replace this with document.body!!
+    // Players are placed over the canvas; default to <body> so apps don't have to provide this.
+    document.body ?: error("CompositionLocal LayerContainer not provided and document.body is null")
 }

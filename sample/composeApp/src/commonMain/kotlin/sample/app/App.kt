@@ -1,7 +1,5 @@
 package sample.app
 
-import MediaPlayer
-import VideoPlayer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +29,7 @@ import html_embeded_content.data.EmbedOptions
 import html_embeded_content.domain.factory.HtmlContentViewerFactory
 import html_embeded_content.domain.factory.HtmlEmbedFeature
 import html_embeded_content.presentation.HtmlContentViewerView
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
 import kotlinx.coroutines.launch
 
 @Composable
@@ -97,7 +96,8 @@ fun MainScree(modifier: Modifier = Modifier) {
                     modifier = Modifier.fillMaxWidth(),
                     url = "https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4",
                     showControls = true,
-                    autoPlay = true
+                    autoPlay = true,
+                    onPlayerEvent = { event -> println("Dialog player: $event") }
                 )
             })
     }
@@ -126,7 +126,8 @@ fun MainScree(modifier: Modifier = Modifier) {
                     ,
                     url = "https://www.youtube.com/watch?v=AD2nEllUMJw",
                     showControls = true,
-                    autoPlay = false
+                    autoPlay = false,
+                    onPlayerEvent = { event -> println("YouTube player: $event") }
                 )
             }
 

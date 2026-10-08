@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'build/cocoapods/framework/mediaplayer_kmp.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '13.0'
-    spec.dependency 'YouTubePlayer', '0.7'
+                
                 
     if !Dir.exist?('build/cocoapods/framework/mediaplayer_kmp.framework') || Dir.empty?('build/cocoapods/framework/mediaplayer_kmp.framework')
         raise "
