@@ -1,3 +1,5 @@
+package io.github.khubaibkhan4.mediaplayer
+
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -9,7 +11,7 @@ import kotlinx.cinterop.ExperimentalForeignApi
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
-fun NativeYouTubePlayer(
+internal fun NativeYouTubePlayer(
     url: String,
     modifier: Modifier = Modifier
 ) {

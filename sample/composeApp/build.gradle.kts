@@ -55,6 +55,10 @@ kotlin {
 
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
+            // mediaplayer-kmp only compiles against JavaFX; the app picks the natives for its OS.
+            listOf("base", "graphics", "controls", "swing", "web", "media").forEach {
+                implementation("org.openjfx:javafx-$it:19:${javaFxClassifier()}")
+            }
         }
 
     }
@@ -86,5 +90,15 @@ compose.desktop {
             packageName = "sample"
             packageVersion = "1.0.0"
         }
+    }
+}
+
+fun javaFxClassifier(): String {
+    val os = System.getProperty("os.name").lowercase()
+    val arm = System.getProperty("os.arch").let { it == "aarch64" || it == "arm64" }
+    return when {
+        os.contains("win") -> "win"
+        os.contains("mac") -> if (arm) "mac-aarch64" else "mac"
+        else -> if (arm) "linux-aarch64" else "linux"
     }
 }

@@ -29,171 +29,249 @@ ecosystem.
 
 ## Features
 
-- **Platform Agnostic:** Supports Android, iOS, Web, and Desktop platforms through Kotlin
-  Multiplatform.
-- **Compose Multiplatform Integration:** Seamlessly integrates with JetBrains Compose Multiplatform
-  UI framework.
-- **YouTube Video Playback:** Easily load and play YouTube videos with minimal setup.
-- **Audio Player Playback:** Easily load and play Audios with minimal setup.
-- **Event Handling:** Provides callbacks and event listeners for video playback actions and events.
-- **Streaming Support:** Provides Streaming Support For the Video and Audio Links.
-- **AutoPlay:** AutoPlayer Support Implementation.
-- **Auth Token:** Authentication Token Implementation.
-- **ReelsView Support:** Reels View Support Implementation.
+- **One API, every platform:** `VideoPlayer` and `MediaPlayer` work on Android, iOS, Desktop (JVM), JS and Wasm.
+- **YouTube playback:** pass any YouTube link (`watch?v=`, `youtu.be`, `shorts`, `embed`) and the YouTube player is used automatically.
+- **Video & audio files:** MP4, WebM, MKV, MOV, HLS (`.m3u8`), DASH, MP3, AAC, WAV, OGG, FLAC and more (format support depends on the platform's native player).
+- **Local files:** play files from device storage or disk by path.
+- **Playback events:** `Ready`, `Playing`, `Paused`, `Buffering`, `Ended` and `Error` callbacks.
+- **Auth headers:** send `Authorization` or any custom header (e.g. a JWT) with media requests.
+- **Fullscreen on Android**, **AutoPlay**, **show/hide controls**.
+- **ReelsView:** vertical or horizontal pager of videos.
+- **Embedded web content:** load any web page and run JavaScript in it.
 
-## Future Plans
+## Platform Support
 
-- **Desktop Playback Support**.
-- **Audio player Customisation Support**.
-- **Video and Audio picker for Android, iOS, Web and Desktop.**
-- **Local Content Support.**
-- **Playback Support.**
+| Feature | Android | iOS | Desktop | Web (JS / Wasm) |
+|---|---|---|---|---|
+| Video files & streams | ExoPlayer (HLS, DASH, MP4…) | AVPlayer | JavaFX WebView | `<video>` |
+| YouTube | ✅ | ✅ | ⚠️ limited (see Troubleshooting) | ✅ |
+| Audio player | ✅ | ✅ | ✅ | ✅ |
+| Local files | ✅ | ✅ | ✅ | — |
+| Playback events | ✅ | ✅ | ✅ | ✅ |
+| Request headers | ✅ streamed | ✅ streamed | ⚠️ file downloaded first | ⚠️ file downloaded first |
+| Fullscreen button | ✅ | native controls | — | native controls |
 
 ## Installation
 
-You can include MediaPlayer-KMP in your project by adding the following dependency:
+**Version Catalog**
 
-**Version Catelog**
-
-```
+```toml
 [versions]
-mediaPlayerKMP = "2.0.9"
+mediaPlayerKMP = "2.2.0"
 
 [libraries]
-alert-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
-
+mediaplayer-kmp = { module = "io.github.khubaibkhan4:mediaplayer-kmp", version.ref = "mediaPlayerKMP" }
 ```
 
-```groovy
-implementation("io.github.khubaibkhan4:mediaplayer-kmp:2.0.9")
+```kotlin
+// composeApp/build.gradle.kts
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.mediaplayer.kmp)
+            // or: implementation("io.github.khubaibkhan4:mediaplayer-kmp:2.2.0")
+        }
+    }
+}
 ```
+
+All public APIs live in the `io.github.khubaibkhan4.mediaplayer` package:
+
+```kotlin
+import io.github.khubaibkhan4.mediaplayer.VideoPlayer
+import io.github.khubaibkhan4.mediaplayer.MediaPlayer
+import io.github.khubaibkhan4.mediaplayer.PlayerEvent
+import io.github.khubaibkhan4.mediaplayer.ReelsView
+import io.github.khubaibkhan4.mediaplayer.PagerType
+```
+
+### Platform setup
+
+**Android** — nothing extra. The library only adds the `INTERNET` permission; it does not declare any
+foreground service, so the Play Console will not ask you about media-playback services.
+
+**iOS** — nothing extra.
+
+**Web (JS / Wasm)** — nothing extra. Players are positioned over the Compose canvas inside
+`document.body` by default.
+
+**Desktop (JVM)** — the desktop player is built on JavaFX, which ships separate native jars per OS.
+The library only compiles against JavaFX, so **your desktop app must add the JavaFX jars for the OS it
+runs on**:
+
+```kotlin
+// composeApp/build.gradle.kts
+kotlin {
+    sourceSets {
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
+            listOf("base", "graphics", "controls", "swing", "web", "media").forEach {
+                implementation("org.openjfx:javafx-$it:19:${javaFxClassifier()}")
+            }
+        }
+    }
+}
+
+fun javaFxClassifier(): String {
+    val os = System.getProperty("os.name").lowercase()
+    val arm = System.getProperty("os.arch").let { it == "aarch64" || it == "arm64" }
+    return when {
+        os.contains("win") -> "win"
+        os.contains("mac") -> if (arm) "mac-aarch64" else "mac"
+        else -> if (arm) "linux-aarch64" else "linux"
+    }
+}
+```
+
+The library targets Java 17, so desktop apps need JDK 17 or newer.
 
 ## Usage
 
-### YouTube Video Player
+### Video Player (YouTube, files and streams)
 
-For the YouTube Player, you just need to provide the youtube video link. It will automatically
-detect it & will launch the YouTube Player.
+`VideoPlayer` detects the URL type automatically: YouTube links open the YouTube player, everything
+else (MP4, HLS, DASH, URLs without an extension, local paths) uses the platform's native player.
 
-```groovy
-import io.github.khubaibkhan4.mediaplayer.VideoPlayer
-
-fun main() {
-    VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
-            url = "https://www.youtube.com/watch?v=AD2nEllUMJw", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
-            showControls: Boolean = true,
-    )
-}
-```
-
-### Video Player
-
-For the YouTube Player, you just need to provide the youtube video link. It will automatically
-detect it & will launch the YouTube Player. It almost supports all the video extensions.
-
-```groovy
-import io.github.khubaibkhan4.mediaplayer.VideoPlayer
-
-fun main() {
-    VideoPlayer(modifier = Modifier.fillMaxWidth().height(340.dp),
-            url = "https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4", // Automatically Detect the URL, Wether to Play YouTube Video or .mp4 e.g
-            showControls: Boolean = true,
-    )
-}
-```
-### Play Local File
-
-To Play Local files, you just need to provide the file path.
-
-```groovy
-import io.github.khubaibkhan4.mediaplayer.VideoPlayer
-
-fun main() {
-   VideoPlayerScreen(
-                url = filePath,
-                autoPlay = false,
-                onInteraction = {},
-                showControls = true
-   )
-}
-```
-
-## Audio Player Support
-
-Audio Player Support is Implemented. It supports `mp3` `wav` `aac` `ogg` `m4a`. It Supports Play
-Back, Volume Up, Down and Stability as well.
-
-```groovy
-import io.github.khubaibkhan4.mediaplayer.VideoPlayer
-
-fun main() {
-    MediaPlayer(
-            modifier = Modifier.fillMaxWidth(),
-            url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
-            startTime = Color.Black,
-            endTime = Color.Black,
-            volumeIconColor = Color.Black,
-            playIconColor = Color.Blue,
-            sliderTrackColor = Color.LightGray,
-            sliderIndicatorColor = Color.Blue,
-            showControls: Boolean = true,
-    )
-}
-```
-
-### Authentication Token Support
-
-Providing the Auth Tokens are pretty simple. You just need to add the headers. You can add the
-headers with key and value pairs.
-
-```groovy
-MediaPlayer(
-        modifier = Modifier.fillMaxSize(),
-        url = "https://example.com/protected-video.mp4",
-        headers = mapOf(
-                "Authorization" to "Bearer your_token",
-                "Custom-Header" to "YourValue"
-        ),
-        startTime = Color.Red,
-        endTime = Color.Blue,
-        autoPlay = true,
-        volumeIconColor = Color.Green,
-        playIconColor = Color.Yellow,
-        sliderTrackColor = Color.Gray,
-        sliderIndicatorColor = Color.Magenta,
-        showControls: Boolean = true,
+```kotlin
+VideoPlayer(
+    modifier = Modifier.fillMaxWidth().height(340.dp),
+    url = "https://www.youtube.com/watch?v=AD2nEllUMJw",
+    autoPlay = true,
+    showControls = true,
 )
 
-
+VideoPlayer(
+    modifier = Modifier.fillMaxWidth().height(340.dp),
+    url = "https://freetestdata.com/wp-content/uploads/2022/02/Free_Test_Data_1MB_MP4.mp4",
+    autoPlay = false,
+    showControls = true,
+)
 ```
 
-## Reels View Support
+| Parameter | Description |
+|---|---|
+| `modifier` | Size and layout of the player. Give it a height (or aspect ratio). |
+| `url` | YouTube link, media URL or local file path. A YouTube `t=` parameter sets the start time. |
+| `autoPlay` | Start playing as soon as the media is ready. |
+| `showControls` | Show the native playback controls. |
+| `headers` | Optional HTTP headers sent with media requests (ignored for YouTube). |
+| `onPlayerEvent` | Optional callback receiving `PlayerEvent`s. |
 
-```groovy
+### Play Local Files
+
+Pass the file path, for example `/storage/emulated/0/Movies/a.mp4` on Android,
+`/Users/me/Movies/a.mp4` on macOS or `D:\Videos\a.mp4` on Windows. `file://` URIs work too.
+
+```kotlin
+VideoPlayer(
+    modifier = Modifier.fillMaxWidth().height(340.dp),
+    url = filePath,
+    autoPlay = false,
+    showControls = true,
+)
+```
+
+### Audio Player
+
+`MediaPlayer` shows an audio player with play/pause, a seek bar and volume control for audio URLs
+(`mp3`, `wav`, `aac`, `ogg`, `m4a`, `flac`, radio streams…). On Android, iOS and Web, video URLs passed
+to it are shown with the video player; on Desktop `MediaPlayer` always plays audio only, so use
+`VideoPlayer` for video there.
+
+```kotlin
+MediaPlayer(
+    modifier = Modifier.fillMaxWidth(),
+    url = "https://commondatastorage.googleapis.com/codeskulptor-demos/DDR_assets/Kangaroo_MusiQue_-_The_Neverwritten_Role_Playing_Game.mp3",
+    headers = emptyMap(),
+    startTime = Color.Black,
+    endTime = Color.Black,
+    autoPlay = true,
+    volumeIconColor = Color.Black,
+    playIconColor = Color.Blue,
+    sliderTrackColor = Color.LightGray,
+    sliderIndicatorColor = Color.Blue,
+    showControls = true,
+)
+```
+
+### Authentication Headers
+
+Both `VideoPlayer` and `MediaPlayer` accept `headers`, e.g. for private videos protected by a JWT:
+
+```kotlin
+VideoPlayer(
+    modifier = Modifier.fillMaxWidth().height(340.dp),
+    url = "https://example.com/protected-video.m3u8",
+    autoPlay = true,
+    showControls = true,
+    headers = mapOf(
+        "Authorization" to "Bearer $jwt",
+        "Custom-Header" to "YourValue",
+    ),
+)
+```
+
+On Android and iOS the headers are sent with every streaming request (including HLS segments).
+On Web and Desktop the file is downloaded first and then played, so headers are not suitable for
+live streams or very large files there.
+
+### Playback Events
+
+`VideoPlayer`, `MediaPlayer` and `ReelsView` report playback state through `onPlayerEvent`:
+
+```kotlin
+VideoPlayer(
+    modifier = Modifier.fillMaxWidth().height(340.dp),
+    url = "https://example.com/video.mp4",
+    autoPlay = true,
+    showControls = true,
+    onPlayerEvent = { event ->
+        when (event) {
+            PlayerEvent.Ready -> println("Loaded")
+            PlayerEvent.Playing -> println("Started")
+            PlayerEvent.Paused -> println("Paused")
+            PlayerEvent.Buffering -> println("Buffering")
+            PlayerEvent.Ended -> println("Finished")
+            is PlayerEvent.Error -> println("Failed: ${event.message}")
+        }
+    }
+)
+```
+
+Events are delivered on the UI thread, so you can update Compose state directly.
+
+### Fullscreen (Android)
+
+The Android video player shows a fullscreen button in its controls. Tapping it opens the video in an
+immersive fullscreen dialog; tapping it again or pressing Back returns to the inline player. The
+library does not force an orientation; lock or rotate the activity yourself if your app needs
+landscape fullscreen. YouTube videos use the YouTube player's own fullscreen button.
+
+### Reels View
+
+```kotlin
 @Composable
 fun MainScreen() {
     val videoUrls = listOf(
-            "https://www.example.com/video1.mp4",
-            "https://www.example.com/video2.mp4",
-            "https://www.example.com/video3.mp4"
+        "https://www.example.com/video1.mp4",
+        "https://www.example.com/video2.mp4",
+        "https://www.example.com/video3.mp4"
     )
     ReelsView(
-            videoUrls = videoUrls,
-            pagerType = PagerType.Vertical, // Choose PagerType.Vertical or PagerType.Horizontal
-            modifier = Modifier.fillMaxSize(),
-            autoPlay = true, // Enable auto-play for videos
-            showControls: Boolean = true,
-            onInteraction = { page, url ->
-                println("User interacted with page $page, video URL: $url")
-            }
+        videoUrls = videoUrls,
+        pagerType = PagerType.Vertical, // or PagerType.Horizontal
+        modifier = Modifier.fillMaxSize(),
+        autoPlay = true,
+        showControls = true,
+        onInteraction = { page, url -> println("Page $page: $url") },
+        onPlayerEvent = { page, event -> println("Page $page: $event") }
     )
 }
-
-
 ```
 
-## Embed Content from Url:
-```
+### Embed Content from Url
+
+```kotlin
 val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
 val htmlEmbedFeature = HtmlEmbedFeature(viewer)
 
@@ -208,14 +286,13 @@ htmlEmbedFeature.embedHtml(
 
 HtmlContentViewerView(
     viewer = viewer,
-    modifier = Modifier
-        .fillMaxSize()
+    modifier = Modifier.fillMaxSize()
 )
-
 ```
 
 ### JavaScript execution + element querying
-```
+
+```kotlin
 val viewer = HtmlContentViewerFactory().createHtmlContentViewer()
 
 viewer.loadUrl("https://example.com")
@@ -224,8 +301,81 @@ viewer.setPageLoadListener {
         println("Page title: $title")
     }
 }
-
 ```
+
+## Migrating from 2.1.x
+
+1. **Imports:** 2.1.x declared everything in the root package (`import VideoPlayer`). Switch to
+   `import io.github.khubaibkhan4.mediaplayer.VideoPlayer` (same for `MediaPlayer`, `ReelsView`,
+   `PagerType`, `VideoPlayerScreen`). The old imports still compile but are deprecated; the IDE
+   quick-fix rewrites them for you. They will be removed in a future release.
+2. **Desktop:** add the JavaFX dependencies shown in [Platform setup](#platform-setup). The library no
+   longer bundles them, because bundling pinned the publisher's OS (macOS) for every user.
+3. **Android:** the library no longer declares a `PlaybackService`, a media-button receiver or the
+   `FOREGROUND_SERVICE*` permissions. If your app relied on them, declare them in your own manifest.
+4. **New optional parameters:** `headers` and `onPlayerEvent` on `VideoPlayer`; `onPlayerEvent` on
+   `MediaPlayer`, `ReelsView` and `VideoPlayerScreen`. Existing calls keep working.
+5. Platform-specific helpers that were accidentally public (`ExoPlayerVideoPlayer`,
+   `YoutubeVideoPlayer`, `DesktopWebView`, `HtmlView`, `isVideoFile`, `formatTime`, …) are now internal.
+   Use `VideoPlayer` / `MediaPlayer` instead.
+
+## Troubleshooting
+
+**Desktop: `Error initializing QuantumRenderer: no suitable pipeline found` / `No toolkit found`**
+Make sure the JavaFX jars match your OS ([Platform setup](#platform-setup)). In VMs or on Linux without
+GPU drivers, force software rendering with the JVM argument `-Dprism.order=sw`:
+
+```kotlin
+compose.desktop {
+    application {
+        jvmArgs += listOf("-Dprism.order=sw")
+    }
+}
+```
+
+**Desktop: `has been compiled by a more recent version of the Java Runtime`**
+Use JDK 17 or newer (2.2.0+ is compiled for Java 17).
+
+**Desktop: a format does not play (e.g. FLV, MKV, live FLV streams)**
+The desktop player relies on JavaFX's WebKit/GStreamer, which supports MP4 (H.264/AAC), HLS, MP3,
+AAC, WAV and AIFF. Other formats are not supported on desktop yet.
+
+**Desktop: YouTube does not start**
+YouTube's player does not fully support JavaFX's embedded browser. Playback of plain video files is
+unaffected.
+
+**Web: the player draws above dialogs / dropdown menus**
+Web players are real HTML elements placed above the Compose canvas, so Compose popups cannot cover
+them. This is a Compose for Web limitation
+([CMP-6858](https://youtrack.jetbrains.com/issue/CMP-6858)); hide the player while a dialog is open.
+
+**Web: autoplay starts muted**
+Browsers block autoplay with sound, so YouTube videos with `autoPlay = true` start muted.
+
+## Running the sample
+
+```bash
+./gradlew :sample:composeApp:run
+```
+
+```bash
+./gradlew :sample:composeApp:installDebug
+```
+
+```bash
+./gradlew :sample:composeApp:wasmJsBrowserDevelopmentRun
+```
+
+For iOS, open the sample in Xcode (or use the Kotlin Multiplatform plugin in Android Studio) and run
+it on a simulator.
+
+## Future Plans
+
+- Player controller API (play, pause, seek and position from code).
+- Video quality / track selection.
+- A more capable desktop backend (more formats, live streams, YouTube).
+- Background playback with media notifications (opt-in).
+- Subtitles, Picture-in-Picture and playlists.
 
 ## 🤝 Connect with Me
 
