@@ -72,12 +72,6 @@ kotlin {
             isStatic = false
         }
 
-        pod("YouTubePlayer") {
-            version = "0.7"
-            extraOpts += listOf("-compiler-option", "-fmodules")
-            // extraOpts += listOf("-compiler-option", "-DFB_SONARKIT_ENABLED=1")
-        }
-
         xcodeConfigurationToNativeBuildType["CUSTOM_DEBUG"] = NativeBuildType.DEBUG
         xcodeConfigurationToNativeBuildType["CUSTOM_RELEASE"] = NativeBuildType.RELEASE
     }
